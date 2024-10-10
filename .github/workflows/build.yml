@@ -1,0 +1,35 @@
+name: Build Minecraft Plugin
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set up JDK 16
+        uses: actions/setup-java@v4
+        with:
+          java-version: 16
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoMoreTNTChainCrash
+          path: ${{ github.workspace }}/build/libs/

@@ -1,0 +1,4 @@
+name: LeverLock
+version: '${version}'
+main: uz.alex2276564.leverlock.LeverLock
+api-version: '1.16'
