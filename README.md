@@ -85,4 +85,4 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ---
 
-Thank you for using **NoMoreTNTChainCrash**! We hope it makes your gaming experience more stable and enjoyable. 🎮🔥
+Thank you for using **LeverLock**! We hope it makes your gaming experience more stable and enjoyable. 🎮🔥
