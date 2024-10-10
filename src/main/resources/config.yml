@@ -1,0 +1,16 @@
+# LeverLock Configuration
+
+# Cooldown settings
+cooldown:
+  # Duration in seconds before a player can interact with a lever again
+  duration: 1
+
+# Message settings
+message:
+  # Message displayed when a player tries to interact with a lever too quickly
+  cooldown: "§cYou are interacting with the lever too quickly!"
+
+# Cleanup settings
+cleanup:
+  # Interval in seconds for cleaning up the cooldown data (5 minutes by default)
+  interval: 300
