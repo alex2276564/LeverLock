@@ -1,21 +1,33 @@
 package uz.alex2276564.leverlock;
 
+import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 import uz.alex2276564.leverlock.commands.ReloadCommand;
 import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
+import uz.alex2276564.leverlock.utils.ConfigManager;
 
 public final class LeverLock extends JavaPlugin {
-    private PlayerLeverClickListener leverClickListener;
+    @Getter
+    private static LeverLock instance;
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
-        leverClickListener = new PlayerLeverClickListener(this);
-        getServer().getPluginManager().registerEvents(leverClickListener, this);
-        getCommand("leverlockreload").setExecutor(new ReloadCommand(this));
+        instance = this;
+        registerListeners();
+        registerCommands();
+        loadUtils();
     }
 
-    public void reloadListenerConfig() {
-        leverClickListener.reloadConfig();
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new PlayerLeverClickListener(this), this);
     }
+
+    private void registerCommands() {
+        getCommand("leverlockreload").setExecutor(new ReloadCommand());
+    }
+
+    private void loadUtils() {
+        ConfigManager.reload();
+    }
+
 }

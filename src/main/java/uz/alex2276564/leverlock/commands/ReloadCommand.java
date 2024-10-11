@@ -4,17 +4,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
-import uz.alex2276564.leverlock.LeverLock;
+import uz.alex2276564.leverlock.utils.ConfigManager;
 
 public class ReloadCommand implements CommandExecutor {
-    private final LeverLock plugin;
-
-    public ReloadCommand(LeverLock plugin) {
-        this.plugin = plugin;
-    }
 
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         String permission = "leverlock.reload";
 
         if (!sender.hasPermission(permission)) {
@@ -22,8 +17,7 @@ public class ReloadCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.reloadConfig();
-        plugin.reloadListenerConfig();
+        ConfigManager.reload();
         sender.sendMessage("§aLeverLock configuration successfully reloaded.");
         return true;
     }
