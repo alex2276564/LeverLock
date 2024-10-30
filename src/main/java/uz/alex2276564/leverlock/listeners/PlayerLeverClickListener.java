@@ -10,6 +10,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import uz.alex2276564.leverlock.LeverLock;
+import uz.alex2276564.leverlock.events.PlayerInteractWithLeverEvent;
 import uz.alex2276564.leverlock.utils.ConfigManager;
 
 import java.time.Duration;
@@ -29,20 +30,30 @@ public class PlayerLeverClickListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    public void on(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && clickedBlock != null && clickedBlock.getType() == TARGET_BLOCK) {
-            Instant currentTime = Instant.now();
-            Instant lastInteractionTime = cooldownMap.getOrDefault(player, Instant.EPOCH);
-
-            if (Duration.between(lastInteractionTime, currentTime).compareTo(ConfigManager.getCooldownDuration()) < 0) {
+            final PlayerInteractWithLeverEvent e = new PlayerInteractWithLeverEvent(player);
+            Bukkit.getPluginManager().callEvent(e);
+            if(e.isCancelled()) {
                 event.setCancelled(true);
-                player.sendMessage(ConfigManager.getCooldownMessage());
-            } else {
-                cooldownMap.put(player, currentTime);
             }
+        }
+    }
+
+    @EventHandler
+    public void on(PlayerInteractWithLeverEvent event) {
+        Player player = event.getPlayer();
+        Instant currentTime = Instant.now();
+        Instant lastInteractionTime = cooldownMap.getOrDefault(player, Instant.EPOCH);
+
+        if (Duration.between(lastInteractionTime, currentTime).compareTo(ConfigManager.getCooldownDuration()) < 0) {
+            event.setCancelled(true);
+            player.sendMessage(ConfigManager.getCooldownMessage());
+        } else {
+            cooldownMap.put(player, currentTime);
         }
     }
 
