@@ -49,7 +49,7 @@ cleanup:
 
 ## 📜 Commands
 
-- `/leverlockreload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
+- `/leverlock reload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
 
 ## 🛠️ Compatibility
 

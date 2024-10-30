@@ -2,7 +2,7 @@ package uz.alex2276564.leverlock;
 
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
-import uz.alex2276564.leverlock.commands.ReloadCommand;
+import uz.alex2276564.leverlock.commands.reloadcommand.ReloadCommand;
 import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
 import uz.alex2276564.leverlock.utils.ConfigManager;
 
@@ -23,7 +23,7 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void registerCommands() {
-        getCommand("leverlockreload").setExecutor(new ReloadCommand());
+        getCommand("leverlock").setExecutor(new ReloadCommand());
     }
 
     private void loadUtils() {
