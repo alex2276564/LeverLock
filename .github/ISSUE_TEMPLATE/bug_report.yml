@@ -1,0 +1,82 @@
+name: Bug Report
+description: Report a bug in LeverLock
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please provide as much information as possible to help us resolve the issue.
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      description: What version of Minecraft are you running?
+      placeholder: "e.g., 1.16.5"
+    validations:
+      required: true
+
+  - type: input
+    id: server-software
+    attributes:
+      label: Server Software
+      description: What server software are you using? (Paper, Spigot, etc.)
+      placeholder: "e.g., Paper"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: LeverLock Version
+      description: What version of LeverLock are you using?
+      placeholder: "e.g., 1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and how to reproduce it
+      placeholder: |
+        1. Place a lever...
+        2. Try to...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Please provide your config.yml content
+      render: yaml
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output
+      render: shell
+
+  - type: dropdown
+    id: antiredstone
+    attributes:
+      label: AntiRedstoneClock-Remastered
+      description: Are you using AntiRedstoneClock-Remastered alongside LeverLock?
+      options:
+        - Yes
+        - No
+    validations:
+      required: true
