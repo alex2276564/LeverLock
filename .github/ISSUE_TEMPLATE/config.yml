@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Docmentation
-    description: Check out the wiki for usage
-    url: https://github.com/alex2276564/LeverLock/README.md
+  - name: Documentation
+    url: https://github.com/alex2276564/LeverLock#readme
+    about: Check out the documentation for installation and usage guide
