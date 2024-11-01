@@ -76,7 +76,7 @@ body:
       label: AntiRedstoneClock-Remastered
       description: Are you using AntiRedstoneClock-Remastered alongside LeverLock?
       options:
-        - Yes
-        - No
+        - "Yes"
+        - "No"
     validations:
       required: true

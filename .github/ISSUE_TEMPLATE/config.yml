@@ -1,11 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Bug Report
-    description: Create a report to help us improve
-    url: https://github.com/alex2276564/LeverLock/issues/new?template=bug_report.yml
-  - name: Feature Request
-    description: Suggest an idea for this project
-    url: https://github.com/alex2276564/LeverLock/issues/new?template=feature_request.yml
-  - name: Question
-    description: Ask a question about this project
-    url: https://github.com/alex2276564/LeverLock/issues/new?template=question.yml
+  - name: Docmentation
+    description: Check out the wiki for usage
+    url: https://github.com/alex2276564/LeverLock/README.md

@@ -1,0 +1,70 @@
+name: Question
+description: Ask a question about LeverLock
+title: "[Question]: "
+labels: ["question"]
+body:
+- type: markdown
+  attributes:
+  value: |
+  Thanks for your interest in LeverLock!
+  Before asking a question, please check:
+  - The existing issues and discussions
+  - The plugin's documentation
+  - The configuration guide
+
+- type: textarea
+  id: question
+  attributes:
+  label: Your Question
+  description: What would you like to know about LeverLock?
+  placeholder: Please be as specific as possible
+  validations:
+  required: true
+
+- type: dropdown
+  id: category
+  attributes:
+  label: Question Category
+  description: What is your question about?
+  options:
+  - "Configuration"
+  - "Installation"
+  - "Compatibility"
+  - "Performance"
+  - "Features"
+  - "Permissions"
+  - "Other"
+  validations:
+  required: true
+
+- type: input
+  id: minecraft-version
+  attributes:
+  label: Minecraft Version
+  description: What version of Minecraft are you using?
+  placeholder: "e.g., 1.16.5"
+  validations:
+  required: false
+
+- type: textarea
+  id: additional-context
+  attributes:
+  label: Additional Context
+  description: Any additional information that might help us answer your question
+  placeholder: |
+  - Server setup details
+  - Related plugins
+  - Previous attempts to solve the issue
+  validations:
+  required: false
+
+- type: checkboxes
+  id: terms
+  attributes:
+  label: Confirmation
+  description: Please confirm the following
+  options:
+  - label: "I have searched for similar questions in existing issues"
+  required: true
+  - label: "I have read the plugin's documentation"
+  required: true
