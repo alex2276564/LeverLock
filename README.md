@@ -16,6 +16,8 @@
 * **Reload Command:**  Easily reload the configuration without restarting the server.
 * **Lightweight and Efficient:** Minimal performance impact on your server.
 * **Compatible with AntiRedstoneClock-Remastered:** Enhances protection against redstone-based exploits and lag.
+* **Auto-Update Check:** On server start, the plugin checks for updates. If a new version is available, a notification is displayed in the console.
+
 
 ## 📥 Installation
 
@@ -56,6 +58,16 @@ cleanup:
 - **Minecraft Versions:** 1.16.5 to the latest release
 - **Server Software:** [Paper](https://papermc.io/) (1.16.5 and newer)
 - **Complementary Plugins:** [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered)
+
+## 📦 Other Plugins
+
+Also check out my other plugins for protecting your Minecraft server:
+
+- [**PermGuard**](https://github.com/alex2276564/PermGuard)  
+  *PermGuard* - a plugin to enhance server security. It temporarily revokes admin permissions when a player joins the server, to prevent unauthorized access or potential security breaches. Admins can only restore permissions manually via the console using commands like `lp user playernick permission set *`.
+
+- [**NoMoreTNTChainCrash**](https://github.com/alex2276564/NoMoreTNTChainCrash)  
+  *NoMoreTNTChainCrash* is a Minecraft plugin designed to prevent server crashes and lag caused by excessive TNT explosions. It achieves this by removing TNT before automated chain explosions can occur, while still allowing players to manually detonate TNT as desired.
 
 ## 🆘 Support
 

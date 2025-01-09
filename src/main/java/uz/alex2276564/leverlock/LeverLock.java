@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import uz.alex2276564.leverlock.commands.reloadcommand.ReloadCommand;
 import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
 import uz.alex2276564.leverlock.utils.ConfigManager;
+import uz.alex2276564.leverlock.utils.UpdateChecker;
 
 public final class LeverLock extends JavaPlugin {
     @Getter
@@ -16,6 +17,7 @@ public final class LeverLock extends JavaPlugin {
         registerListeners();
         registerCommands();
         loadUtils();
+        checkUpdates();
     }
 
     private void registerListeners() {
@@ -28,6 +30,11 @@ public final class LeverLock extends JavaPlugin {
 
     private void loadUtils() {
         ConfigManager.reload();
+    }
+
+    private void checkUpdates() {
+        UpdateChecker updateChecker = new UpdateChecker(this, "alex2276564/LeverLock");
+        updateChecker.checkForUpdates();
     }
 
 }
