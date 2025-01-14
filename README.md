@@ -18,6 +18,13 @@
 * **Compatible with AntiRedstoneClock-Remastered:** Enhances protection against redstone-based exploits and lag.
 * **Auto-Update Check:** On server start, the plugin checks for updates. If a new version is available, a notification is displayed in the console.
 
+## ⚠️ Important Note About Redstone Exploits
+
+Using `use-faster-eigencraft-redstone: true` in legacy versions or `redstone-implementation: ALTERNATE_CURRENT` in newer versions of Paper **will not protect your server from all redstone-based exploits**. These settings may optimize performance but do not prevent all exploit scenarios.
+
+To ensure maximum protection against redstone-related exploits and lag, it is recommended to use **LeverLock** alongside [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered), as both plugins provide comprehensive safeguards beyond what Paper's settings offer.
+
+Make sure to configure your server with the appropriate plugins for full protection!
 
 ## 📥 Installation
 
