@@ -1,30 +1,27 @@
 package uz.alex2276564.leverlock.utils;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import uz.alex2276564.leverlock.task.Runner;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class UpdateChecker {
     private final JavaPlugin plugin;
     private final String githubRepo;
+    private final Runner runner;
 
-    public UpdateChecker(JavaPlugin plugin, String githubRepo) {
+    public UpdateChecker(JavaPlugin plugin, String githubRepo, Runner runner) {
         this.plugin = plugin;
         this.githubRepo = githubRepo;
+        this.runner = runner;
     }
 
     public void checkForUpdates() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        runner.runAsync(() -> {
             try {
                 String latestVersion = getLatestVersion();
-                if (latestVersion != null && !latestVersion.equals(plugin.getDescription().getVersion())) {
+                if (!latestVersion.equals(plugin.getDescription().getVersion())) {
                     plugin.getLogger().info("");
                     plugin.getLogger().info("New version available: " + latestVersion);
                     plugin.getLogger().info("You are running version: " + plugin.getDescription().getVersion());
@@ -33,27 +30,21 @@ public class UpdateChecker {
                 } else {
                     plugin.getLogger().info("You are running the latest version of " + plugin.getDescription().getName());
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 plugin.getLogger().warning("Failed to check for updates: " + e.getMessage());
             }
         });
     }
 
-    private String getLatestVersion() throws IOException {
+    private String getLatestVersion() throws Exception {
         String apiUrl = "https://api.github.com/repos/" + githubRepo + "/releases/latest";
-        URL url = new URL(apiUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpUtils.HttpResponse response = HttpUtils.getResponse(apiUrl, "MinecraftPlugin");
 
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", "MinecraftPlugin");
-
-        if (connection.getResponseCode() != 200) {
-            throw new IOException("Failed to check for updates: HTTP " + connection.getResponseCode());
-        }
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+        if (response.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            JsonObject jsonObject = response.getJsonBody();
             return jsonObject.get("tag_name").getAsString();
+        } else {
+            throw new Exception("GitHub API returned HTTP " + response.getResponseCode());
         }
     }
 }
