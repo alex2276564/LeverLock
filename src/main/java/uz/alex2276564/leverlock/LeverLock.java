@@ -31,7 +31,7 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerLeverClickListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerLeverClickListener(runner), this);
     }
 
     private void registerCommands() {

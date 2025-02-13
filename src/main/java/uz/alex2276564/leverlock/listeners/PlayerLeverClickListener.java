@@ -8,9 +8,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import uz.alex2276564.leverlock.LeverLock;
 import uz.alex2276564.leverlock.events.PlayerInteractWithLeverEvent;
+import uz.alex2276564.leverlock.task.Runner;
 import uz.alex2276564.leverlock.utils.ConfigManager;
 
 import java.time.Duration;
@@ -19,13 +18,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerLeverClickListener implements Listener {
-    private final JavaPlugin plugin;
+    private final Runner runner;
     private static final Material TARGET_BLOCK = Material.LEVER;
-
     private final Map<Player, Instant> cooldownMap = new ConcurrentHashMap<>();
 
-    public PlayerLeverClickListener(LeverLock plugin) {
-        this.plugin = plugin;
+    public PlayerLeverClickListener(Runner runner) {
+        this.runner = runner;
         startCleanupTask();
     }
 
@@ -58,7 +56,9 @@ public class PlayerLeverClickListener implements Listener {
     }
 
     private void startCleanupTask() {
-        Bukkit.getScheduler().runTaskTimer(plugin, this::cleanupCooldowns, ConfigManager.getCleanupInterval(), ConfigManager.getCleanupInterval());
+        runner.runPeriodical(
+            this::cleanupCooldowns, ConfigManager.getCleanupInterval(), ConfigManager.getCleanupInterval()
+        );
     }
 
     private void cleanupCooldowns() {
