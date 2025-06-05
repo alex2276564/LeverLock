@@ -2,11 +2,11 @@ package uz.alex2276564.leverlock;
 
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
-import uz.alex2276564.leverlock.commands.reloadcommand.ReloadCommand;
+import uz.alex2276564.leverlock.commands.MainCommandExecutor;
 import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
-import uz.alex2276564.leverlock.task.BukkitRunner;
-import uz.alex2276564.leverlock.task.Runner;
-import uz.alex2276564.leverlock.utils.ConfigManager;
+import uz.alex2276564.leverlock.runner.BukkitRunner;
+import uz.alex2276564.leverlock.runner.Runner;
+import uz.alex2276564.leverlock.config.ConfigManager;
 import uz.alex2276564.leverlock.utils.UpdateChecker;
 
 public final class LeverLock extends JavaPlugin {
@@ -16,14 +16,23 @@ public final class LeverLock extends JavaPlugin {
     @Getter
     private Runner runner;
 
+    @Getter
+    private ConfigManager configManager;
+
     @Override
     public void onEnable() {
         instance = this;
+
         setupRunner();
+
+        configManager = new ConfigManager(this);
+        configManager.reload();
+
         registerListeners();
         registerCommands();
-        loadUtils();
         checkUpdates();
+
+        getLogger().info("LeverLock has been enabled!");
     }
 
     private void setupRunner() {
@@ -31,15 +40,12 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerLeverClickListener(runner), this);
+        getServer().getPluginManager().registerEvents(new PlayerLeverClickListener(this), this);
     }
 
     private void registerCommands() {
-        getCommand("leverlock").setExecutor(new ReloadCommand());
-    }
-
-    private void loadUtils() {
-        ConfigManager.reload();
+        // Register main command executor that handles all subcommands
+        getCommand("leverlock").setExecutor(new MainCommandExecutor(this));
     }
 
     private void checkUpdates() {
@@ -49,7 +55,8 @@ public final class LeverLock extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        runner.cancelTasks();
+        if (runner != null) {
+            runner.cancelTasks();
+        }
     }
-
 }

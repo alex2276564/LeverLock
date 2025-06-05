@@ -1,4 +1,4 @@
-package uz.alex2276564.leverlock.task;
+package uz.alex2276564.leverlock.runner;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;

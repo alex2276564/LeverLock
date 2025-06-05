@@ -8,9 +8,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import uz.alex2276564.leverlock.LeverLock;
 import uz.alex2276564.leverlock.events.PlayerInteractWithLeverEvent;
-import uz.alex2276564.leverlock.task.Runner;
-import uz.alex2276564.leverlock.utils.ConfigManager;
+import uz.alex2276564.leverlock.config.ConfigManager;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -18,12 +18,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerLeverClickListener implements Listener {
-    private final Runner runner;
+    private final LeverLock plugin;
     private static final Material TARGET_BLOCK = Material.LEVER;
     private final Map<Player, Instant> cooldownMap = new ConcurrentHashMap<>();
 
-    public PlayerLeverClickListener(Runner runner) {
-        this.runner = runner;
+    public PlayerLeverClickListener(LeverLock plugin) {
+        this.plugin = plugin;
         startCleanupTask();
     }
 
@@ -46,25 +46,28 @@ public class PlayerLeverClickListener implements Listener {
         Player player = event.getPlayer();
         Instant currentTime = Instant.now();
         Instant lastInteractionTime = cooldownMap.getOrDefault(player, Instant.EPOCH);
+        ConfigManager config = plugin.getConfigManager();
 
-        if (Duration.between(lastInteractionTime, currentTime).compareTo(ConfigManager.getCooldownDuration()) < 0) {
+        if (Duration.between(lastInteractionTime, currentTime).compareTo(config.getCooldownDuration()) < 0) {
             event.setCancelled(true);
-            player.sendMessage(ConfigManager.getCooldownMessage());
+            player.sendMessage(config.getCooldownMessage());
         } else {
             cooldownMap.put(player, currentTime);
         }
     }
 
     private void startCleanupTask() {
-        runner.runPeriodical(
-            this::cleanupCooldowns, ConfigManager.getCleanupInterval(), ConfigManager.getCleanupInterval()
+        ConfigManager config = plugin.getConfigManager();
+        plugin.getRunner().runPeriodical(
+                this::cleanupCooldowns, config.getCleanupInterval(), config.getCleanupInterval()
         );
     }
 
     private void cleanupCooldowns() {
         Instant now = Instant.now();
+        ConfigManager config = plugin.getConfigManager();
         cooldownMap.entrySet().removeIf(entry ->
-                !entry.getKey().isOnline() || Duration.between(entry.getValue(), now).compareTo(ConfigManager.getCooldownDuration()) > 0
+                !entry.getKey().isOnline() || Duration.between(entry.getValue(), now).compareTo(config.getCooldownDuration()) > 0
         );
     }
 }

@@ -2,7 +2,7 @@ package uz.alex2276564.leverlock.utils;
 
 import com.google.gson.JsonObject;
 import org.bukkit.plugin.java.JavaPlugin;
-import uz.alex2276564.leverlock.task.Runner;
+import uz.alex2276564.leverlock.runner.Runner;
 
 import java.net.HttpURLConnection;
 
@@ -10,11 +10,13 @@ public class UpdateChecker {
     private final JavaPlugin plugin;
     private final String githubRepo;
     private final Runner runner;
+    private final HttpUtils httpUtils;
 
     public UpdateChecker(JavaPlugin plugin, String githubRepo, Runner runner) {
         this.plugin = plugin;
         this.githubRepo = githubRepo;
         this.runner = runner;
+        this.httpUtils = new HttpUtils();
     }
 
     public void checkForUpdates() {
@@ -38,7 +40,7 @@ public class UpdateChecker {
 
     private String getLatestVersion() throws Exception {
         String apiUrl = "https://api.github.com/repos/" + githubRepo + "/releases/latest";
-        HttpUtils.HttpResponse response = HttpUtils.getResponse(apiUrl, "MinecraftPlugin");
+        HttpUtils.HttpResponse response = httpUtils.getResponse(apiUrl, "MinecraftPlugin");
 
         if (response.getResponseCode() == HttpURLConnection.HTTP_OK) {
             JsonObject jsonObject = response.getJsonBody();

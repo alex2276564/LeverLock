@@ -30,7 +30,7 @@ public class HttpUtils {
      * @return HttpResponse containing the response code and JSON body.
      * @throws Exception if the request fails.
      */
-    public static HttpResponse getResponse(String urlString, String userAgent) throws Exception {
+    public HttpResponse getResponse(String urlString, String userAgent) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
