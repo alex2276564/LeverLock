@@ -23,7 +23,7 @@ jobs:
           config: '.markdownlint.jsonc'  # if you have a configuration file
   #        continue-on-error: true  # to prevent the build from crashing due to errors in the documentation
 
-  security-scan-codeql:
+  security-scan:
     name: 🔐 CodeQL Security Scan
     runs-on: ubuntu-latest
 
@@ -107,7 +107,7 @@ jobs:
 
   build:
     name: 🏗️ Build Plugin
-    needs: [lint-markdown, security-scan-codeql, security-scan-snyk, secrets-scan]
+    needs: [lint-markdown, security-scan, security-scan-snyk, secrets-scan]
     runs-on: ubuntu-latest
 
     steps:
