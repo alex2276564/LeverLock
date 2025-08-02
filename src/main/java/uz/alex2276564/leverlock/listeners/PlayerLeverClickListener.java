@@ -1,5 +1,6 @@
 package uz.alex2276564.leverlock.listeners;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -9,8 +10,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import uz.alex2276564.leverlock.LeverLock;
+import uz.alex2276564.leverlock.config.LeverLockConfigManager;
 import uz.alex2276564.leverlock.events.PlayerInteractWithLeverEvent;
-import uz.alex2276564.leverlock.config.ConfigManager;
+import uz.alex2276564.leverlock.utils.adventure.MessageManager;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,9 +23,11 @@ public class PlayerLeverClickListener implements Listener {
     private final LeverLock plugin;
     private static final Material TARGET_BLOCK = Material.LEVER;
     private final Map<Player, Instant> cooldownMap = new ConcurrentHashMap<>();
+    private final MessageManager messageManager;
 
     public PlayerLeverClickListener(LeverLock plugin) {
         this.plugin = plugin;
+        this.messageManager = plugin.getMessageManager();
         startCleanupTask();
     }
 
@@ -46,28 +50,37 @@ public class PlayerLeverClickListener implements Listener {
         Player player = event.getPlayer();
         Instant currentTime = Instant.now();
         Instant lastInteractionTime = cooldownMap.getOrDefault(player, Instant.EPOCH);
-        ConfigManager config = plugin.getConfigManager();
+        LeverLockConfigManager config = plugin.getConfigManager();
 
-        if (Duration.between(lastInteractionTime, currentTime).compareTo(config.getCooldownDuration()) < 0) {
+        Duration cooldownDuration = Duration.ofSeconds(config.getMainConfig().cooldown.duration);
+
+        if (Duration.between(lastInteractionTime, currentTime).compareTo(cooldownDuration) < 0) {
             event.setCancelled(true);
-            player.sendMessage(config.getCooldownMessage());
+
+            if (config.getMainConfig().notifications.sendCooldownMessage) {
+                Component message = messageManager.parse(config.getMessagesConfig().general.cooldown);
+                player.sendMessage(message);
+            }
         } else {
             cooldownMap.put(player, currentTime);
         }
     }
 
     private void startCleanupTask() {
-        ConfigManager config = plugin.getConfigManager();
+        LeverLockConfigManager config = plugin.getConfigManager();
+        long intervalTicks = config.getMainConfig().cleanup.interval * 20L;
         plugin.getRunner().runPeriodical(
-                this::cleanupCooldowns, config.getCleanupInterval(), config.getCleanupInterval()
+                this::cleanupCooldowns, intervalTicks, intervalTicks
         );
     }
 
     private void cleanupCooldowns() {
         Instant now = Instant.now();
-        ConfigManager config = plugin.getConfigManager();
+        LeverLockConfigManager config = plugin.getConfigManager();
+        Duration cooldownDuration = Duration.ofSeconds(config.getMainConfig().cooldown.duration);
+
         cooldownMap.entrySet().removeIf(entry ->
-                !entry.getKey().isOnline() || Duration.between(entry.getValue(), now).compareTo(config.getCooldownDuration()) > 0
+                !entry.getKey().isOnline() || Duration.between(entry.getValue(), now).compareTo(cooldownDuration) > 0
         );
     }
 }

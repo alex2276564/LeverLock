@@ -2,11 +2,16 @@ package uz.alex2276564.leverlock;
 
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
-import uz.alex2276564.leverlock.commands.MainCommandExecutor;
+import uz.alex2276564.leverlock.commands.LeverLockCommands;
+import uz.alex2276564.leverlock.commands.framework.builder.BuiltCommand;
+import uz.alex2276564.leverlock.commands.framework.builder.MultiCommandManager;
+import uz.alex2276564.leverlock.config.LeverLockConfigManager;
 import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
-import uz.alex2276564.leverlock.runner.BukkitRunner;
-import uz.alex2276564.leverlock.runner.Runner;
-import uz.alex2276564.leverlock.config.ConfigManager;
+import uz.alex2276564.leverlock.utils.adventure.AdventureMessageManager;
+import uz.alex2276564.leverlock.utils.adventure.LegacyMessageManager;
+import uz.alex2276564.leverlock.utils.adventure.MessageManager;
+import uz.alex2276564.leverlock.utils.runner.BukkitRunner;
+import uz.alex2276564.leverlock.utils.runner.Runner;
 import uz.alex2276564.leverlock.utils.UpdateChecker;
 
 public final class LeverLock extends JavaPlugin {
@@ -17,26 +22,67 @@ public final class LeverLock extends JavaPlugin {
     private Runner runner;
 
     @Getter
-    private ConfigManager configManager;
+    private LeverLockConfigManager configManager;
+
+    @Getter
+    private MessageManager messageManager;
 
     @Override
     public void onEnable() {
         instance = this;
 
-        setupRunner();
+        try {
+            setupRunner();
+            setupMessageManager();
+            setupConfig();
+            registerListeners();
+            registerCommands();
+            checkUpdates();
 
-        configManager = new ConfigManager(this);
-        configManager.reload();
-
-        registerListeners();
-        registerCommands();
-        checkUpdates();
-
-        getLogger().info("LeverLock has been enabled!");
+            getLogger().info("LeverLock has been enabled successfully!");
+        } catch (Exception e) {
+            getLogger().severe("Failed to enable LeverLock: " + e.getMessage());
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
+        }
     }
 
     private void setupRunner() {
         runner = new BukkitRunner(this);
+    }
+
+    private void setupMessageManager() {
+        if (isMiniMessageAvailable()) {
+            try {
+                messageManager = new AdventureMessageManager();
+                getLogger().info("Using Adventure MiniMessage for text formatting - full MiniMessage syntax supported");
+                return;
+            } catch (Exception e) {
+                getLogger().warning("Failed to initialize Adventure MiniMessage: " + e.getMessage());
+                getLogger().warning("Falling back to Legacy formatting...");
+            }
+        }
+
+        messageManager = new LegacyMessageManager();
+        getLogger().info("Using Legacy ChatColor formatting with MiniMessage syntax compatibility");
+        getLogger().info("You can continue using MiniMessage syntax in your config - basic tags will be converted automatically");
+        getLogger().info("Supported: colors, bold, italic, underlined, strikethrough, obfuscated, reset");
+        getLogger().info("Note: Complex features (gradients, hover, click events) are not available on older server versions");
+    }
+
+    private boolean isMiniMessageAvailable() {
+        try {
+            Class.forName("net.kyori.adventure.text.minimessage.MiniMessage");
+            return true;
+        } catch (ClassNotFoundException e) {
+            getLogger().info("MiniMessage library not found - this is normal for Paper versions below 1.18");
+            return false;
+        }
+    }
+
+    private void setupConfig() {
+        configManager = new LeverLockConfigManager(this);
+        configManager.reload();
     }
 
     private void registerListeners() {
@@ -44,8 +90,10 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void registerCommands() {
-        // Register main command executor that handles all subcommands
-        getCommand("leverlock").setExecutor(new MainCommandExecutor(this));
+        MultiCommandManager multiManager = new MultiCommandManager(this);
+
+        BuiltCommand permGuardCommand = LeverLockCommands.createLeverLockCommand();
+        multiManager.registerCommand(permGuardCommand);
     }
 
     private void checkUpdates() {

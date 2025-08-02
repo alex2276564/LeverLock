@@ -1,4 +1,4 @@
-package uz.alex2276564.leverlock.runner;
+package uz.alex2276564.leverlock.utils.runner;
 
 import org.jetbrains.annotations.NotNull;
 

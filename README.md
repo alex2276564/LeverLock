@@ -1,9 +1,10 @@
 # LeverLock 🔒
 
 [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.16.5+-brightgreen)](https://papermc.io/software/paper)
-[![Java Version](https://img.shields.io/badge/java-16+-orange)](https://adoptium.net/installation/linux/)
+[![Java Version](https://img.shields.io/badge/java-17+-orange)](https://adoptium.net/installation/linux/)
 [![GitHub Release](https://img.shields.io/github/v/release/alex2276564/LeverLock?color=blue)](https://github.com/alex2276564/LeverLock/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Text Formatting](https://img.shields.io/badge/Text%20Formatting-🌈%20MiniMessage-ff69b4)](https://docs.advntr.dev/minimessage/)
 
 **LeverLock** is a Minecraft plugin designed to prevent rapid lever interactions, which can potentially cause lag or be exploited for unintended game mechanics. It works as a complementary tool to [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered), providing comprehensive protection against redstone-based lag and exploits.
 
@@ -17,6 +18,7 @@
 * **Lightweight and Efficient:** Minimal performance impact on your server.
 * **Compatible with AntiRedstoneClock-Remastered:** Enhances protection against redstone-based exploits and lag.
 * **Auto-Update Check:** On server start, the plugin checks for updates. If a new version is available, a notification is displayed in the console.
+* **Modern Text Rendering:** Uses Adventure MiniMessage for sleek formatting on supported servers (Paper 1.18+), with automatic fallback on older versions.
 
 ## ⚠️ Important Notes About Redstone Exploits
 
@@ -41,30 +43,9 @@ The choice between specialized plugins (LeverLock + AntiRedstoneClockRemastered)
 3. **Optional - Enhanced Protection:** Download and install [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered) for comprehensive protection against redstone-related lag and exploits.  Place the `.jar` file into your server's `plugins` folder.
 4. **Restart:** Restart your server to load the plugin(s).
 
-## 🛠️ Configuration
-
-Edit the `config.yml` file in the plugin's folder to customize settings:
-
-```yaml
-# LeverLock Configuration
-
-# Cooldown settings
-cooldown:
-  # Duration in seconds before a player can interact with a lever again
-  duration: 1
-
-# Message settings
-message:
-  # Message displayed when a player tries to interact with a lever too quickly
-  cooldown: "§cYou are interacting with the lever too quickly!"
-
-# Cleanup settings
-cleanup:
-  # Interval in seconds for cleaning up the cooldown data (5 minutes by default)
-  interval: 300
-```
-
 ## 📜 Commands
+
+LeverLock supports both the full command `/leverlock` and the shorter alias `/ll` for all commands (requires `leverlock.command` permission).
 
 - `/leverlock reload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
 
@@ -74,15 +55,29 @@ cleanup:
 - **Server Software:** [Paper](https://papermc.io/) (1.16.5 and newer)
 - **Complementary Plugins:** [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered)
 
+## 📝 Note
+
+**Native MiniMessage Support:** Plugin uses only native Kyori Adventure MiniMessage implementation without any backporting or compatibility layers:
+
+- **Paper 1.18+:** Full native MiniMessage support with all features including gradients, hover effects, click events, and advanced formatting
+- **Paper 1.16-1.17:** Partial support with automatic conversion to legacy ChatColor codes. Supported features include basic colors (`<red>`, `<blue>`, etc.), text styles (`<bold>`, `<italic>`, `<underlined>`, `<strikethrough>`, `<obfuscated>`), and reset tags (`<reset>`). Advanced features like gradients and hover effects are automatically stripped without causing errors.
+
+⚠️ However, on supported forks that update Adventure libraries (such as ShieldSpigot or similar actively maintained 1.16.x–1.17.x forks), full MiniMessage support may be available even on legacy versions, if the net.kyori.adventure.text.minimessage.MiniMessage class is present and compatible. In such cases, the plugin will automatically detect and enable native formatting features as it does on modern servers.
+
+You can use the [MiniMessage Web Editor](https://webui.advntr.dev/) to test and preview your formatting. The plugin will automatically adapt the formatting to your server's capabilities, so you can use the same configuration across different server versions.
+
 ## 📦 Other Plugins
 
 Also check out my other plugins for protecting your Minecraft server:
 
 - [**PermGuard**](https://github.com/alex2276564/PermGuard)  
-  *PermGuard* - a plugin to enhance server security. It temporarily revokes admin permissions when a player joins the server, to prevent unauthorized access or potential security breaches. Admins can only restore permissions manually via the console using commands like `lp user playernick permission set *`.
+  *PermGuard* - a plugin to enhance server security. It temporarily revokes admin permissions when a player joins the server and sending security alerts to Telegram, to prevent unauthorized access or potential security breaches. Admins can only restore permissions manually via the console using commands like `lp user playernick permission set *`.
 
 - [**NoMoreTNTChainCrash**](https://github.com/alex2276564/NoMoreTNTChainCrash)  
   *NoMoreTNTChainCrash* is a Minecraft plugin designed to prevent server crashes and lag caused by excessive TNT explosions. It achieves this by removing TNT before automated chain explosions can occur, while still allowing players to manually detonate TNT as desired.
+
+> 🔍 **You can find more of my Minecraft plugins here:**  
+> [https://github.com/alex2276564?tab=repositories](https://github.com/alex2276564?tab=repositories)
 
 ## 🆘 Support
 

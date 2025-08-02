@@ -2,7 +2,7 @@ package uz.alex2276564.leverlock.utils;
 
 import com.google.gson.JsonObject;
 import org.bukkit.plugin.java.JavaPlugin;
-import uz.alex2276564.leverlock.runner.Runner;
+import uz.alex2276564.leverlock.utils.runner.Runner;
 
 import java.net.HttpURLConnection;
 
@@ -23,10 +23,12 @@ public class UpdateChecker {
         runner.runAsync(() -> {
             try {
                 String latestVersion = getLatestVersion();
-                if (!latestVersion.equals(plugin.getDescription().getVersion())) {
+                String currentVersion = plugin.getDescription().getVersion();
+
+                if (!latestVersion.equals(currentVersion)) {
                     plugin.getLogger().info("");
                     plugin.getLogger().info("New version available: " + latestVersion);
-                    plugin.getLogger().info("You are running version: " + plugin.getDescription().getVersion());
+                    plugin.getLogger().info("You are running version: " + currentVersion);
                     plugin.getLogger().info("Download the latest version from: https://github.com/" + githubRepo + "/releases");
                     plugin.getLogger().info("");
                 } else {
@@ -42,11 +44,11 @@ public class UpdateChecker {
         String apiUrl = "https://api.github.com/repos/" + githubRepo + "/releases/latest";
         HttpUtils.HttpResponse response = httpUtils.getResponse(apiUrl, "MinecraftPlugin");
 
-        if (response.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            JsonObject jsonObject = response.getJsonBody();
+        if (response.responseCode() == HttpURLConnection.HTTP_OK) {
+            JsonObject jsonObject = response.jsonBody();
             return jsonObject.get("tag_name").getAsString();
         } else {
-            throw new Exception("GitHub API returned HTTP " + response.getResponseCode());
+            throw new Exception("GitHub API returned HTTP " + response.responseCode());
         }
     }
 }

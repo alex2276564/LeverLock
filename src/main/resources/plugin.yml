@@ -4,9 +4,17 @@ main: uz.alex2276564.leverlock.LeverLock
 api-version: '1.16'
 authors: [alex2276564]
 description: LeverLock is a Minecraft plugin designed to prevent rapid lever interactions, which can potentially cause lag or be exploited for unintended game mechanics.
+website: https://github.com/alex2276564/LeverLock
 commands:
   leverlock:
-    description: Reloads the LeverLock plugin configuration
-    usage: /<command> [arg]
-    permission: leverlock.reload
-website: https://github.com/alex2276564/LeverLock
+    description: Main command for LeverLock plugin
+    usage: /leverlock <reload>
+    aliases: [ll]
+    permission: leverlock.command
+permissions:
+  leverlock.command:
+    description: Allows access to basic LeverLock commands
+    default: op
+  leverlock.reload:
+    description: Allows reloading the LeverLock configuration
+    default: op
