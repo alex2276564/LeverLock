@@ -73,7 +73,7 @@ jobs:
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/gradle-jdk17@master
-        continue-on-error: true # TODO Remove this when snyk will work with gradle v9
+        continue-on-error: true # Don't stop the pipeline because maybe snyk api limit
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           JAVA_HOME: /opt/java/openjdk # Enforce directory expected by the Snyk container

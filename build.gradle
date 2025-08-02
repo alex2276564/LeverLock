@@ -49,6 +49,9 @@ tasks {
     }
 }
 
+// ⚠️ NOTE: Shading is required for legacy compatibility!
+// Libraries like Gson may not work correctly on older server versions (1.16.x and below) if not shaded.
+// Shadowing ensures that all required dependencies are bundled and isolated within your final plugin JAR.
 shadowJar {
     archiveClassifier.set('')
 
