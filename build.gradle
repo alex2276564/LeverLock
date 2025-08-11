@@ -34,7 +34,7 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.13.1'
 
-    compileOnly "net.kyori:adventure-text-minimessage:4.23.0"
+    compileOnly "net.kyori:adventure-text-minimessage:4.24.0"
 
     implementation("eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.9")
     implementation("eu.okaeri:okaeri-configs-serdes-commons:5.0.9")
