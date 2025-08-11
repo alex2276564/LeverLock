@@ -10,6 +10,7 @@ import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
 import uz.alex2276564.leverlock.utils.adventure.AdventureMessageManager;
 import uz.alex2276564.leverlock.utils.adventure.LegacyMessageManager;
 import uz.alex2276564.leverlock.utils.adventure.MessageManager;
+import uz.alex2276564.leverlock.utils.backup.BackupManager;
 import uz.alex2276564.leverlock.utils.runner.BukkitRunner;
 import uz.alex2276564.leverlock.utils.runner.Runner;
 import uz.alex2276564.leverlock.utils.UpdateChecker;
@@ -25,6 +26,9 @@ public final class LeverLock extends JavaPlugin {
     private LeverLockConfigManager configManager;
 
     @Getter
+    private BackupManager backupManager;
+
+    @Getter
     private MessageManager messageManager;
 
     @Override
@@ -35,6 +39,7 @@ public final class LeverLock extends JavaPlugin {
             setupRunner();
             setupMessageManager();
             setupConfig();
+            setupBackupManager();
             registerListeners();
             registerCommands();
             checkUpdates();
@@ -83,6 +88,18 @@ public final class LeverLock extends JavaPlugin {
     private void setupConfig() {
         configManager = new LeverLockConfigManager(this);
         configManager.reload();
+    }
+
+    private void setupBackupManager() {
+        backupManager = new BackupManager(this);
+
+        // Check for backup need on startup
+        backupManager.checkAndBackupAsync();
+
+        // Schedule periodic checks
+        runner.runPeriodicalAsync(() -> backupManager.checkAndBackupAsync(),
+                20L * 60 * 60 * 24, // Check daily
+                20L * 60 * 60 * 24); // Every 24 hours
     }
 
     private void registerListeners() {

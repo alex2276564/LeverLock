@@ -8,7 +8,7 @@ website: https://github.com/alex2276564/LeverLock
 commands:
   leverlock:
     description: Main command for LeverLock plugin
-    usage: /leverlock <reload>
+    usage: /leverlock <reload|help>
     aliases: [ll]
     permission: leverlock.command
 permissions:
