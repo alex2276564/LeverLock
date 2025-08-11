@@ -41,18 +41,18 @@ public class MessagesConfig extends OkaeriConfig {
             public String header = "<gold>=== LeverLock Help ===";
 
             @Comment("Reload command help line")
-            public String reloadLine = "<yellow>/leverlock reload [type] <gray>- Reload the plugin configuration";
+            public String reloadLine = "<yellow>/leverlock reload <type> <gray>- Reload the plugin configuration";
 
             @Comment("Help command help line")
             public String helpLine = "<yellow>/leverlock help <gray>- Show this help message";
         }
 
         public static class ReloadSection extends OkaeriConfig {
-            @Comment("Reload success message. {type} = config type")
-            public String success = "<green>LeverLock configuration successfully reloaded ({type}).";
+            @Comment("Reload success message. <type> = config type")
+            public String success = "<green>LeverLock configuration successfully reloaded (<type>).";
 
-            @Comment("Reload error message. {error} = error details")
-            public String error = "<red>Failed to reload configuration: {error}";
+            @Comment("Reload error message. <error> = error details")
+            public String error = "<red>Failed to reload configuration: <error>";
         }
     }
 

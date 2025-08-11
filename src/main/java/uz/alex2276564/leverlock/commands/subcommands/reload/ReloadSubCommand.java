@@ -17,19 +17,15 @@ public class ReloadSubCommand implements SubCommandProvider {
                 .executor((sender, context) -> {
                     String type = context.getArgument("type");
 
+                    MessagesConfig msg = LeverLock.getInstance().getConfigManager().getMessagesConfig();
                     try {
                         LeverLock.getInstance().getConfigManager().reload();
 
-                        MessagesConfig msg = LeverLock.getInstance().getConfigManager().getMessagesConfig();
-                        String successMessage = msg.commands.reload.success.replace("{type}", type);
-
-                        LeverLock.getInstance().getMessageManager().sendMessage(sender, successMessage);
+                        LeverLock.getInstance().getMessageManager().sendMessage(sender, msg.commands.reload.success, "type", type);
 
                     } catch (Exception e) {
-                        MessagesConfig msg = LeverLock.getInstance().getConfigManager().getMessagesConfig();
-                        String errorMessage = msg.commands.reload.error.replace("{error}", e.getMessage());
 
-                        LeverLock.getInstance().getMessageManager().sendMessage(sender, errorMessage);
+                        LeverLock.getInstance().getMessageManager().sendMessage(sender, msg.commands.reload.error, "error", e.getMessage());
                     }
                 });
     }

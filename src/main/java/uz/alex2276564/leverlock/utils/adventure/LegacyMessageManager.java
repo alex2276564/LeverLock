@@ -1,7 +1,7 @@
 package uz.alex2276564.leverlock.utils.adventure;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -28,20 +28,36 @@ public class LegacyMessageManager implements MessageManager {
     @Override
     public @NotNull Component parse(@NotNull String message) {
         String converted = convertMiniMessageToLegacy(message);
-        return Component.text(ChatColor.translateAlternateColorCodes('&', converted));
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(converted);
     }
 
     @Override
     public @NotNull Component parse(@NotNull String message, @NotNull String placeholder, @NotNull String replacement) {
-        return parse(message.replace(placeholder, replacement));
+        String safe = escapeForLegacy(replacement);
+        return parse(message.replace(placeholder, safe));
     }
 
     @Override
     public @NotNull Component parse(@NotNull String message, @NotNull Map<String, String> placeholders) {
         String processedMessage = message;
+
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            String safe = escapeForLegacy(entry.getValue());
+            processedMessage = processedMessage.replace(entry.getKey(), safe);
+        }
+
+        return parse(processedMessage);
+    }
+
+    @Override
+    public @NotNull Component parseWithTrustedPlaceholders(@NotNull String message, @NotNull Map<String, String> trustedPlaceholders) {
+        String processedMessage = message;
+
+        // WARNING: No escaping for trusted content - only use with config/admin input!
+        for (Map.Entry<String, String> entry : trustedPlaceholders.entrySet()) {
             processedMessage = processedMessage.replace(entry.getKey(), entry.getValue());
         }
+
         return parse(processedMessage);
     }
 
@@ -60,13 +76,12 @@ public class LegacyMessageManager implements MessageManager {
 
     @Override
     public void sendMessage(@NotNull Player player, @NotNull String message) {
-        String converted = convertMiniMessageToLegacy(message);
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', converted));
+        player.sendMessage(parse(message));
     }
 
     @Override
     public void sendMessage(@NotNull Player player, @NotNull String message, @NotNull String placeholder, @NotNull String replacement) {
-        sendMessage(player, message.replace(placeholder, replacement));
+        player.sendMessage(parse(message, placeholder, replacement));
     }
 
     @Override
@@ -74,20 +89,49 @@ public class LegacyMessageManager implements MessageManager {
         if (sender instanceof Player player) {
             sendMessage(player, message);
         } else {
-            // For the console - strip tags
+            // For console - strip tags and send as plain text
             sender.sendMessage(stripTags(message));
         }
     }
 
     @Override
-    public void sendMessage(@NotNull CommandSender sender, @NotNull String message, @NotNull String placeholder, @NotNull String replacement) {
-        sendMessage(sender, message.replace(placeholder, replacement));
+    public void sendMessage(@NotNull CommandSender sender, @NotNull String message,
+                            @NotNull String placeholder, @NotNull String replacement) {
+
+        if (sender instanceof Player player) {
+            player.sendMessage(parse(message, placeholder, replacement));
+        } else {
+            // For the console - sanitize and remove tags
+            String safe = escapeForLegacy(replacement);
+            String processed = message.replace(placeholder, safe);
+            sender.sendMessage(stripTags(processed));
+        }
+    }
+
+    private String escapeForLegacy(String input) {
+        if (input == null) return "";
+        StringBuilder out = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (Character.isISOControl(c) && c != '\n' && c != '\r' && c != '\t') continue;
+
+            switch (c) {
+                case '<' -> out.append('‹');
+                case '>' -> out.append('›');
+                case '&' -> out.append('＆');
+                case '§' -> {
+                }
+                default -> out.append(c);
+            }
+        }
+        return out.toString();
     }
 
     private String convertMiniMessageToLegacy(String message) {
         String result = StringUtils.processEscapeSequences(message);
 
-        // Remove new line
+        // Convert new line
         result = NEWLINE_PATTERN.matcher(result).replaceAll("\n");
 
         // Convert colors
