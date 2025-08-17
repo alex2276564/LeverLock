@@ -62,8 +62,6 @@ LeverLock supports both the full command `/leverlock` and the shorter alias `/ll
 - **Paper 1.18+:** Full native MiniMessage support with all features including gradients, hover effects, click events, and advanced formatting
 - **Paper 1.16-1.17:** Partial support with automatic conversion to legacy ChatColor codes. Supported features include basic colors (`<red>`, `<blue>`, etc.), text styles (`<bold>`, `<italic>`, `<underlined>`, `<strikethrough>`, `<obfuscated>`), and reset tags (`<reset>`). Advanced features like gradients and hover effects are automatically stripped without causing errors.
 
-⚠️ However, on supported forks that update Adventure libraries (such as ShieldSpigot or similar actively maintained 1.16.x–1.17.x forks), full MiniMessage support may be available even on legacy versions, if the net.kyori.adventure.text.minimessage.MiniMessage class is present and compatible. In such cases, the plugin will automatically detect and enable native formatting features as it does on modern servers.
-
 You can use the [MiniMessage Web Editor](https://webui.advntr.dev/) to test and preview your formatting. The plugin will automatically adapt the formatting to your server's capabilities, so you can use the same configuration across different server versions.
 
 ## 📦 Other Plugins
