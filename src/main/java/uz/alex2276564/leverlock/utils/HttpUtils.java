@@ -3,6 +3,7 @@ package uz.alex2276564.leverlock.utils;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -10,7 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 public class HttpUtils {
 
-    public record HttpResponse(int responseCode, JsonObject jsonBody) {}
+    public record HttpResponse(int responseCode, JsonObject jsonBody) {
+    }
 
     /**
      * Executes a GET request and returns an HttpResponse containing the response code and JSON body.
@@ -23,16 +25,21 @@ public class HttpUtils {
     public HttpResponse getResponse(String urlString, String userAgent) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
         connection.setRequestMethod("GET");
         if (userAgent != null) {
             connection.setRequestProperty("User-Agent", userAgent);
         }
 
-        try (InputStreamReader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
+        try {
             int responseCode = connection.getResponseCode();
-            JsonObject jsonBody = JsonParser.parseReader(reader).getAsJsonObject();
+            InputStream in = responseCode >= 400 ? connection.getErrorStream() : connection.getInputStream();
+            JsonObject jsonBody = null;
 
+            if (in != null) {
+                try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                    jsonBody = JsonParser.parseReader(reader).getAsJsonObject();
+                }
+            }
             return new HttpResponse(responseCode, jsonBody);
         } finally {
             connection.disconnect();

@@ -3,7 +3,7 @@ name: Update Gradle Wrapper
 on:
   schedule:
     - cron: '0 4 * * 1' # every week on Mondays at 4:00 UTC
-  workflow_dispatch:     # can be run manually from the GitHub UI
+  workflow_dispatch:    # can be run manually from the GitHub UI
 
 jobs:
   update-wrapper:

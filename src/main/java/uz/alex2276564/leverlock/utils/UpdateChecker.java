@@ -46,7 +46,14 @@ public class UpdateChecker {
 
         if (response.responseCode() == HttpURLConnection.HTTP_OK) {
             JsonObject jsonObject = response.jsonBody();
-            return jsonObject.get("tag_name").getAsString();
+            String tagName = jsonObject.get("tag_name").getAsString();
+            
+            if (SecurityUtils.containsSuspiciousPatterns(tagName)) {
+                plugin.getLogger().warning("Suspicious version tag detected from GitHub API, blocking update check");
+                return "blocked";
+            }
+
+            return SecurityUtils.sanitize(tagName, SecurityUtils.SanitizeType.VERSION);
         } else {
             throw new Exception("GitHub API returned HTTP " + response.responseCode());
         }

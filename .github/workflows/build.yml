@@ -2,12 +2,53 @@ name: Build Minecraft Plugin
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
   pull_request:
-    branches: [main]
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
+  lint-actions:
+    name: 🧹 Lint Actions
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@main
+
+      - uses: devops-actions/actionlint@main
+
+  lint-links:
+    name: 🧹 Lint Links
+    runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Lint Links (push)
+        if: github.event_name != 'pull_request'
+        uses: umbrelladocs/action-linkspector@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+          fail_level: error
+
+      - name: Lint Links (PR)
+        if: github.event_name == 'pull_request'
+        uses: umbrelladocs/action-linkspector@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+
   lint-markdown:
     name: 🧹 Lint Markdown
     runs-on: ubuntu-latest
@@ -24,12 +65,11 @@ jobs:
   #        continue-on-error: true  # to prevent the build from crashing due to errors in the documentation
 
   security-scan:
-    name: 🔐 CodeQL Security Scan
+    name: 🔐 Security Scan CodeQL
     runs-on: ubuntu-latest
 
     permissions:
       actions: read
-      contents: read
       security-events: write
 
     steps:
@@ -57,7 +97,7 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
   security-scan-snyk:
-    name: 🔐 Snyk Security Scan
+    name: 🔐 Security Scan Snyk
     runs-on: ubuntu-latest
 
     steps:
@@ -81,8 +121,88 @@ jobs:
         with:
           args: --severity-threshold=high
 
-  secrets-scan:
-    name: 🔑 Secrets Scan
+  security-scan-trivy:
+    name: 🔐 Security Scan Trivy
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        # Fix condition to work for both push and PR (excluding forks)
+        if: |
+          github.event_name == 'push' || 
+          (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  security-scan-osv-pr:
+    name: 🔐 Security Scan OSV (PR)
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.2.1
+    with:
+      fail-on-vuln: true
+      scan-args: |-
+        --allow-no-lockfiles
+        --recursive
+        ./
+
+  security-scan-osv-push:
+    name: 🔐 Security Scan OSV (push)
+    if: ${{ github.event_name == 'push' }}
+
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.1
+    with:
+      fail-on-vuln: true
+      scan-args: |-
+        --allow-no-lockfiles
+        --recursive
+        ./
+
+  dependency-review:
+    name: 🧩 Dependency Review (PR)
+    runs-on: ubuntu-latest
+
+    # Skip Dependency Review for push
+    if: github.event_name == 'pull_request'
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@main
+        with:
+          fail-on-severity: high
+
+  secrets-scan-trufflehog:
+    name: 🔑 Secrets Scan TruffleHog
     runs-on: ubuntu-latest
 
     steps:
@@ -106,9 +226,59 @@ jobs:
           head: ${{ github.event.pull_request.head.sha }}
           extra_args: --results=verified,unknown
 
-  build:
-    name: 🏗️ Build Plugin
-    needs: [lint-markdown, security-scan, security-scan-snyk, secrets-scan]
+  build-pr:
+    name: 🏗️ Build Plugin (PR)
+    if: github.event_name == 'pull_request'
+    needs: [
+      lint-actions,
+      lint-links,
+      lint-markdown,
+      security-scan,
+      security-scan-snyk,
+      security-scan-trivy,
+      security-scan-osv-pr,
+      secrets-scan-trufflehog,
+      dependency-review
+    ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@main
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@main
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: LeverLock
+          path: ${{ github.workspace }}/build/libs/
+
+  build-push:
+    name: 🏗️ Build Plugin (push)
+    if: github.event_name == 'push'
+    needs: [
+      lint-actions,
+      lint-links,
+      lint-markdown,
+      security-scan,
+      security-scan-snyk,
+      security-scan-trivy,
+      security-scan-osv-push,
+      secrets-scan-trufflehog
+    ]
     runs-on: ubuntu-latest
 
     steps:

@@ -55,6 +55,8 @@ tasks {
 shadowJar {
     archiveClassifier.set('')
 
+    mergeServiceFiles()
+
     relocate 'eu.okaeri.configs', 'uz.alex2276564.permguard.libs.okaeri.configs'
 
     relocate 'com.google.gson', 'uz.alex2276564.permguard.libs.gson'
