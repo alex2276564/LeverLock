@@ -100,6 +100,10 @@ jobs:
     name: 🔐 Security Scan Snyk
     runs-on: ubuntu-latest
 
+    permissions:
+      actions: read
+      security-events: write
+
     steps:
       - uses: actions/checkout@main
 
@@ -113,13 +117,21 @@ jobs:
         uses: gradle/actions/setup-gradle@main
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/gradle-jdk17@master
-        continue-on-error: true # Don't stop the pipeline because maybe snyk api limit
+        uses: snyk/actions/gradle-9-jdk17@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           JAVA_HOME: /opt/java/openjdk # Enforce directory expected by the Snyk container
         with:
-          args: --severity-threshold=high
+          args: --severity-threshold=high --sarif-file-output=snyk.sarif
+
+      - name: Upload Snyk scan results to GitHub Security tab
+        # Fix condition to work for both push and PR (excluding forks)
+        if: |
+          github.event_name == 'push' || 
+          (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'snyk.sarif'
 
   security-scan-trivy:
     name: 🔐 Security Scan Trivy

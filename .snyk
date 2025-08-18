@@ -10,4 +10,4 @@ ignore:
 
   'SNYK-JAVA-COMMONSLANG-10734077':
     - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > commons-lang:commons-lang@2.6':
-        reason: 'Paper API dependencies - not directly controllable
+        reason: 'Paper API dependencies - not directly controllable'
