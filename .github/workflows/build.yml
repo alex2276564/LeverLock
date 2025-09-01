@@ -170,7 +170,7 @@ jobs:
       actions: read
       security-events: write
 
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.2.1
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.2.2
     with:
       fail-on-vuln: true
       scan-args: |-
@@ -187,7 +187,7 @@ jobs:
       actions: read
       security-events: write
 
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.1
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.2
     with:
       fail-on-vuln: true
       scan-args: |-
