@@ -36,8 +36,8 @@ dependencies {
 
     compileOnly "net.kyori:adventure-text-minimessage:4.24.0"
 
-    implementation("eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.9")
-    implementation("eu.okaeri:okaeri-configs-serdes-commons:5.0.9")
+    implementation("eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.13")
+    implementation("eu.okaeri:okaeri-configs-serdes-commons:5.0.13")
 }
 
 tasks {
