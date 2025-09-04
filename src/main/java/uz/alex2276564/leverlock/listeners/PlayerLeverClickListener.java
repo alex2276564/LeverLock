@@ -69,7 +69,7 @@ public class PlayerLeverClickListener implements Listener {
     private void startCleanupTask() {
         LeverLockConfigManager config = plugin.getConfigManager();
         long intervalTicks = config.getMainConfig().cleanup.interval * 20L;
-        plugin.getRunner().runPeriodical(
+        plugin.getRunner().runGlobalTimer(
                 this::cleanupCooldowns, intervalTicks, intervalTicks
         );
     }

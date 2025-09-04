@@ -21,6 +21,10 @@ repositories {
         name = "okaeri"
         url = "https://storehouse.okaeri.eu/repository/maven-public/"
     }
+    maven {
+        name = "tcoded-releases"
+        url = "https://repo.tcoded.com/releases"
+    }
 }
 
 dependencies {
@@ -38,7 +42,10 @@ dependencies {
 
     implementation("eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.13")
     implementation("eu.okaeri:okaeri-configs-serdes-commons:5.0.13")
+
+    implementation 'com.tcoded:FoliaLib:0.5.1'
 }
+
 
 tasks {
     runServer {
@@ -57,9 +64,11 @@ shadowJar {
 
     mergeServiceFiles()
 
-    relocate 'eu.okaeri.configs', 'uz.alex2276564.permguard.libs.okaeri.configs'
+    relocate 'eu.okaeri.configs', 'uz.alex2276564.leverlock.libs.okaeri.configs'
 
-    relocate 'com.google.gson', 'uz.alex2276564.permguard.libs.gson'
+    relocate 'com.google.gson', 'uz.alex2276564.leverlock.libs.gson'
+
+    relocate 'com.tcoded.folialib', 'uz.alex2276564.leverlock.libs.folialib'
 }
 
 build {

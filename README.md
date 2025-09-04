@@ -47,12 +47,16 @@ The choice between specialized plugins (LeverLock + AntiRedstoneClockRemastered)
 
 LeverLock supports both the full command `/leverlock` and the shorter alias `/ll` for all commands (requires `leverlock.command` permission).
 
-- `/leverlock reload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
+- `/ll help` - Show help information (requires `leverlock.command`)
+- `/ll reload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
 
 ## 🛠️ Compatibility
 
 - **Minecraft Versions:** 1.16.5 to the latest release
-- **Server Software:** [Paper](https://papermc.io/) (1.16.5 and newer)
+- **Server Software:**
+    - ✅ [Paper](https://papermc.io/) (1.16.5 and newer) - **Fully Supported**
+    - ✅ [Folia](https://papermc.io/software/folia) - **Fully Supported** with optimized region-aware scheduling
+    - ❌ Spigot - Not supported
 - **Complementary Plugins:** [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered)
 
 ## 📝 Note

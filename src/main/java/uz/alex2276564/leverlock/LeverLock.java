@@ -11,7 +11,7 @@ import uz.alex2276564.leverlock.utils.adventure.AdventureMessageManager;
 import uz.alex2276564.leverlock.utils.adventure.LegacyMessageManager;
 import uz.alex2276564.leverlock.utils.adventure.MessageManager;
 import uz.alex2276564.leverlock.utils.backup.BackupManager;
-import uz.alex2276564.leverlock.utils.runner.BukkitRunner;
+import uz.alex2276564.leverlock.utils.runner.FoliaRunner;
 import uz.alex2276564.leverlock.utils.runner.Runner;
 import uz.alex2276564.leverlock.utils.UpdateChecker;
 
@@ -53,7 +53,12 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void setupRunner() {
-        runner = new BukkitRunner(this);
+        runner = new FoliaRunner(this);
+        getLogger().info("Initialized " + runner.getPlatformName() + " scheduler support");
+
+        if (runner.isFolia()) {
+            getLogger().info("Folia detected - using RegionScheduler and EntityScheduler for optimal performance");
+        }
     }
 
     private void setupMessageManager() {
@@ -97,10 +102,9 @@ public final class LeverLock extends JavaPlugin {
         // Check for backup need on startup
         backupManager.checkAndBackupAsync();
 
-        // Schedule periodic checks
-        runner.runPeriodicalAsync(() -> backupManager.checkAndBackupAsync(),
-                20L * 60 * 60 * 24, // Check daily
-                20L * 60 * 60 * 24); // Every 24 hours
+        // Schedule periodic checks - daily (24 hours)
+        long dailyTicks = Runner.secondsToTicks(24 * 60 * 60);
+        runner.runAsyncTimer(() -> backupManager.checkAndBackupAsync(), dailyTicks, dailyTicks);
     }
 
     private void registerListeners() {
@@ -122,7 +126,7 @@ public final class LeverLock extends JavaPlugin {
     @Override
     public void onDisable() {
         if (runner != null) {
-            runner.cancelTasks();
+            runner.cancelAllTasks();
         }
     }
 }
