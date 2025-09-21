@@ -74,11 +74,9 @@ public final class LeverLock extends JavaPlugin {
         }
 
         messageManager = new LegacyMessageManager();
-        getLogger().info("Using Legacy ChatColor formatting with MiniMessage syntax compatibility");
-        getLogger().info("You can continue using MiniMessage syntax in your config - basic tags will be converted automatically");
+        getLogger().info("Using Legacy ChatColor formatting with MiniMessage-like basic tags");
         getLogger().info("Supported: colors, bold, italic, underlined, strikethrough, obfuscated, reset");
-        getLogger().warning("Note: Legacy mode uses regex processing which may have slight performance overhead");
-        getLogger().info("Note: Complex features (gradients, hover, click events) are not available on older server versions");
+        getLogger().info("Note: Complex features (gradients, hover, click events) are not available on older versions");
     }
 
     private boolean isMiniMessageAvailable() {
@@ -114,8 +112,8 @@ public final class LeverLock extends JavaPlugin {
     private void registerCommands() {
         MultiCommandManager multiManager = new MultiCommandManager(this);
 
-        BuiltCommand permGuardCommand = LeverLockCommands.createLeverLockCommand();
-        multiManager.registerCommand(permGuardCommand);
+        BuiltCommand leverLockCommand = LeverLockCommands.createLeverLockCommand();
+        multiManager.registerCommand( leverLockCommand);
     }
 
     private void checkUpdates() {

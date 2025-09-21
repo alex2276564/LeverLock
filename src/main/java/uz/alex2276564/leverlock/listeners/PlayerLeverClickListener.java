@@ -1,37 +1,37 @@
 package uz.alex2276564.leverlock.listeners;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import uz.alex2276564.leverlock.LeverLock;
 import uz.alex2276564.leverlock.config.LeverLockConfigManager;
 import uz.alex2276564.leverlock.events.PlayerInteractWithLeverEvent;
-import uz.alex2276564.leverlock.utils.adventure.MessageManager;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerLeverClickListener implements Listener {
     private final LeverLock plugin;
     private static final Material TARGET_BLOCK = Material.LEVER;
-    private final Map<Player, Instant> cooldownMap = new ConcurrentHashMap<>();
-    private final MessageManager messageManager;
+    private final Map<UUID, Instant> cooldownMap = new ConcurrentHashMap<>();
 
     public PlayerLeverClickListener(LeverLock plugin) {
         this.plugin = plugin;
-        this.messageManager = plugin.getMessageManager();
         startCleanupTask();
     }
 
-    @EventHandler
+    @EventHandler(
+            ignoreCancelled = true
+    )
     public void on(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
@@ -45,11 +45,14 @@ public class PlayerLeverClickListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(
+            priority = EventPriority.MONITOR,
+            ignoreCancelled = true
+    )
     public void on(PlayerInteractWithLeverEvent event) {
         Player player = event.getPlayer();
         Instant currentTime = Instant.now();
-        Instant lastInteractionTime = cooldownMap.getOrDefault(player, Instant.EPOCH);
+        Instant lastInteractionTime = cooldownMap.getOrDefault(player.getUniqueId(), Instant.EPOCH);
         LeverLockConfigManager config = plugin.getConfigManager();
 
         Duration cooldownDuration = Duration.ofSeconds(config.getMainConfig().cooldown.duration);
@@ -57,12 +60,10 @@ public class PlayerLeverClickListener implements Listener {
         if (Duration.between(lastInteractionTime, currentTime).compareTo(cooldownDuration) < 0) {
             event.setCancelled(true);
 
-            if (config.getMainConfig().notifications.sendCooldownMessage) {
-                Component message = messageManager.parse(config.getMessagesConfig().general.cooldown);
-                player.sendMessage(message);
-            }
+            String message = config.getMessagesConfig().general.cooldown;
+            LeverLock.getInstance().getMessageManager().sendMessageKeyed(player, "general.cooldown", message);
         } else {
-            cooldownMap.put(player, currentTime);
+            cooldownMap.put(player.getUniqueId(), currentTime);
         }
     }
 
@@ -79,8 +80,7 @@ public class PlayerLeverClickListener implements Listener {
         LeverLockConfigManager config = plugin.getConfigManager();
         Duration cooldownDuration = Duration.ofSeconds(config.getMainConfig().cooldown.duration);
 
-        cooldownMap.entrySet().removeIf(entry ->
-                !entry.getKey().isOnline() || Duration.between(entry.getValue(), now).compareTo(cooldownDuration) > 0
+        cooldownMap.entrySet().removeIf(entry -> Duration.between(entry.getValue(), now).compareTo(cooldownDuration) > 0
         );
     }
 }

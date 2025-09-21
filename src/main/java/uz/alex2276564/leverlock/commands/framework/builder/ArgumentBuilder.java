@@ -1,18 +1,23 @@
 package uz.alex2276564.leverlock.commands.framework.builder;
 
 import lombok.Getter;
+import org.bukkit.command.CommandSender;
 
 import java.util.List;
-import java.util.function.Function;
 
 @Getter
 public class ArgumentBuilder<T> {
+    public interface SuggestionProvider {
+        List<String> suggest(CommandSender sender, String partial, String[] argsSoFar);
+    }
+
     private final String name;
     private final ArgumentType<T> type;
     private boolean optional = false;
     private T defaultValue;
     private List<String> suggestions;
-    private Function<String, List<String>> dynamicSuggestions;
+
+    private SuggestionProvider dynamicSuggestions;
 
     public ArgumentBuilder(String name, ArgumentType<T> type) {
         this.name = name;
@@ -35,8 +40,8 @@ public class ArgumentBuilder<T> {
         return this;
     }
 
-    public ArgumentBuilder<T> dynamicSuggestions(Function<String, List<String>> suggestionProvider) {
-        this.dynamicSuggestions = suggestionProvider;
+    public ArgumentBuilder<T> dynamicSuggestions(SuggestionProvider provider) {
+        this.dynamicSuggestions = provider;
         return this;
     }
 

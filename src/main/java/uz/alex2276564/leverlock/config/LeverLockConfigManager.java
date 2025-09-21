@@ -59,6 +59,7 @@ public class LeverLockConfigManager {
         });
 
         MessagesConfigValidator.validate(messagesConfig);
+        LeverLock.getInstance().getMessageManager().configureDisabledKeysProvider(() -> getMessagesConfig().disabledKeys);
         plugin.getLogger().info("Messages configuration loaded and validated successfully");
     }
 }

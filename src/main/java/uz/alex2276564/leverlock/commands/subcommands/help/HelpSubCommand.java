@@ -15,9 +15,9 @@ public class HelpSubCommand implements SubCommandProvider {
                     LeverLock plugin = LeverLock.getInstance();
                     MessagesConfig msg = plugin.getConfigManager().getMessagesConfig();
 
-                    plugin.getMessageManager().sendMessage(sender, msg.commands.help.header);
-                    plugin.getMessageManager().sendMessage(sender, msg.commands.help.reloadLine);
-                    plugin.getMessageManager().sendMessage(sender, msg.commands.help.helpLine);
+                    plugin.getMessageManager().sendMessageKeyed(sender, "commands.help.header", msg.commands.help.header);
+                    plugin.getMessageManager().sendMessageKeyed(sender, "commands.help.reloadLine", msg.commands.help.reloadLine);
+                    plugin.getMessageManager().sendMessageKeyed(sender, "commands.help.helpLine", msg.commands.help.helpLine);
                 });
     }
 }

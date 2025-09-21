@@ -45,7 +45,35 @@ public class CommandManager implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, String[] args) {
         if (command == null) return new ArrayList<>();
-        return getTabCompletions(sender, args);
+
+        if (args.length == 0) return new ArrayList<>();
+
+        CommandPath path = findCommandPath(command, Arrays.copyOf(args, args.length - 1));
+        String partial = args[args.length - 1];
+
+        List<String> completions = new ArrayList<>();
+
+        // Suggest subcommands first
+        for (Map.Entry<String, BuiltSubCommand> entry : path.subCommands.entrySet()) {
+            String subName = entry.getKey();
+            BuiltSubCommand subCmd = entry.getValue();
+
+            if (subName.toLowerCase().startsWith(partial.toLowerCase())
+                    && (subCmd.permission() == null || sender.hasPermission(subCmd.permission()))) {
+                completions.add(subName);
+            }
+        }
+
+        // If no subcommand suggestion, suggest arguments
+        if (path.arguments != null && !path.arguments.isEmpty()) {
+            int argIndex = args.length - 1 - path.consumedArgs.size();
+            if (argIndex >= 0 && argIndex < path.arguments.size()) {
+                ArgumentBuilder<?> arg = path.arguments.get(argIndex);
+                addArgumentCompletions(completions, arg, partial, sender, args, path);
+            }
+        }
+
+        return completions;
     }
 
     private CommandPath findCommandPath(BuiltCommand rootCommand, String[] args) {
@@ -131,40 +159,7 @@ public class CommandManager implements TabExecutor {
         return context;
     }
 
-    private List<String> getTabCompletions(CommandSender sender, String[] args) {
-        List<String> completions = new ArrayList<>();
-
-        if (args.length == 0) {
-            return completions;
-        }
-
-        CommandPath path = findCommandPath(command, Arrays.copyOf(args, args.length - 1));
-        String partial = args[args.length - 1];
-
-        // Suggest subcommands
-        for (Map.Entry<String, BuiltSubCommand> entry : path.subCommands.entrySet()) {
-            String subName = entry.getKey();
-            BuiltSubCommand subCmd = entry.getValue();
-
-            if (subName.toLowerCase().startsWith(partial.toLowerCase()) &&
-                    (subCmd.permission() == null || sender.hasPermission(subCmd.permission()))) {
-                completions.add(subName);
-            }
-        }
-
-        // If no subcommands match, suggest arguments
-        if (completions.isEmpty() && !path.arguments.isEmpty()) {
-            int argIndex = args.length - 1 - path.consumedArgs.size();
-            if (argIndex >= 0 && argIndex < path.arguments.size()) {
-                ArgumentBuilder<?> arg = path.arguments.get(argIndex);
-                addArgumentCompletions(completions, arg, partial);
-            }
-        }
-
-        return completions;
-    }
-
-    private void addArgumentCompletions(List<String> completions, ArgumentBuilder<?> arg, String partial) {
+    private void addArgumentCompletions(List<String> completions, ArgumentBuilder<?> arg, String partial, CommandSender sender, String[] fullArgs, CommandPath path) {
         if (arg.getSuggestions() != null) {
             for (String suggestion : arg.getSuggestions()) {
                 if (suggestion != null && suggestion.toLowerCase().startsWith(partial.toLowerCase())) {
@@ -173,9 +168,11 @@ public class CommandManager implements TabExecutor {
             }
         }
 
-        if (arg.getDynamicSuggestions() != null) {
-            try {
-                List<String> dynamic = arg.getDynamicSuggestions().apply(partial);
+        String[] argsSoFar = Arrays.copyOfRange(fullArgs, path.consumedArgs.size(), fullArgs.length - 1);
+
+        try {
+            if (arg.getDynamicSuggestions() != null) {
+                var dynamic = arg.getDynamicSuggestions().suggest(sender, partial, argsSoFar);
                 if (dynamic != null) {
                     for (String suggestion : dynamic) {
                         if (suggestion != null && suggestion.toLowerCase().startsWith(partial.toLowerCase())) {
@@ -183,9 +180,9 @@ public class CommandManager implements TabExecutor {
                         }
                     }
                 }
-            } catch (Exception e) {
-                // Ignore dynamic suggestion errors
             }
+        } catch (Exception ignored) {
+            // ignore suggestion errors
         }
     }
 

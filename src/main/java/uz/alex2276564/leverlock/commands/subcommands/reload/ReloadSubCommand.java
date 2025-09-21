@@ -21,11 +21,11 @@ public class ReloadSubCommand implements SubCommandProvider {
                     try {
                         LeverLock.getInstance().getConfigManager().reload();
 
-                        LeverLock.getInstance().getMessageManager().sendMessage(sender, msg.commands.reload.success, "type", type);
+                        LeverLock.getInstance().getMessageManager().sendMessageKeyed(sender, "commands.reload.success", msg.commands.reload.success, "type", type);
 
                     } catch (Exception e) {
 
-                        LeverLock.getInstance().getMessageManager().sendMessage(sender, msg.commands.reload.error, "error", e.getMessage());
+                        LeverLock.getInstance().getMessageManager().sendMessageKeyed(sender, "commands.reload.error", msg.commands.reload.error, "error", e.getMessage());
                     }
                 });
     }
