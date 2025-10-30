@@ -76,7 +76,7 @@ Also check out my other plugins for protecting your Minecraft server:
   *PermGuard* - a plugin to enhance server security. It temporarily revokes admin permissions when a player joins the server and sending security alerts to Telegram, to prevent unauthorized access or potential security breaches. Admins can only restore permissions manually via the console using commands like `lp user playernick permission set *`.
 
 - [**NoMoreTNTChainCrash**](https://github.com/alex2276564/NoMoreTNTChainCrash)  
-  *NoMoreTNTChainCrash* is a Minecraft plugin designed to prevent server crashes and lag caused by excessive TNT explosions. It achieves this by removing TNT before automated chain explosions can occur, while still allowing players to manually detonate TNT as desired.
+  *NoMoreTNTChainCrash* is a Minecraft plugin designed to prevent server crashes and lag caused by excessive TNT explosions. It achieves this by ignoring TNT before automated chain explosions can occur, while still allowing players to manually detonate TNT as desired.
 
 > 🔍 **You can find more of my Minecraft plugins here:**  
 > [https://github.com/alex2276564?tab=repositories](https://github.com/alex2276564?tab=repositories)
