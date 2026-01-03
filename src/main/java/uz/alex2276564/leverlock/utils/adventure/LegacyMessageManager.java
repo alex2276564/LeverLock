@@ -171,6 +171,26 @@ public class LegacyMessageManager implements MessageManager {
         }
     }
 
+    @Override
+    public void sendMessage(@NotNull Player player, @NotNull String message, @NotNull Map<String, String> placeholders) {
+        player.sendMessage(parse(message, placeholders));
+    }
+
+    @Override
+    public void sendMessage(@NotNull CommandSender sender, @NotNull String message, @NotNull Map<String, String> placeholders) {
+        if (sender instanceof Player p) {
+            p.sendMessage(parse(message, placeholders));
+        } else {
+            // For console - plain text without tags
+            String processed = message;
+            for (Map.Entry<String, String> e : placeholders.entrySet()) {
+                String token = "<" + e.getKey() + ">";
+                processed = processed.replace(token, escapeForLegacy(e.getValue()));
+            }
+            sender.sendMessage(stripTags(processed));
+        }
+    }
+
     // keyed
     @Override
     public void sendMessageKeyed(@NotNull Player player, String key, @NotNull String message) {

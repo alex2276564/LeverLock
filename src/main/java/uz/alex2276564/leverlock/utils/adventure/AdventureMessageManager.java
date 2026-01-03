@@ -126,6 +126,20 @@ public class AdventureMessageManager implements MessageManager {
         }
     }
 
+    @Override
+    public void sendMessage(@NotNull Player player, @NotNull String message, @NotNull Map<String, String> placeholders) {
+        sendToPlayer(player, parse(message, placeholders));
+    }
+
+    @Override
+    public void sendMessage(@NotNull CommandSender sender, @NotNull String message, @NotNull Map<String, String> placeholders) {
+        if (sender instanceof Player player) {
+            sendToPlayer(player, parse(message, placeholders));
+        } else {
+            sendToConsole(sender, parse(message, placeholders));
+        }
+    }
+
     // ========= keyed =========
 
     @Override

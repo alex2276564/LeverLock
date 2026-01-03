@@ -68,6 +68,8 @@ LeverLock supports both the full command `/leverlock` and the shorter alias `/ll
 
 You can use the [MiniMessage Web Editor](https://webui.advntr.dev/) to test and preview your formatting. The plugin will automatically adapt the formatting to your server's capabilities, so you can use the same configuration across different server versions.
 
+> Note: On Paper 1.16–1.17 there is no perfect way to get every MiniMessage feature without adding extra, version‑sensitive libraries. This plugin intentionally does **not** use full Adventure backports such as `BukkitAudiences` (they require constant updates and can conflict with complex plugins like ViaVersion). Instead, legacy servers get a simple MiniMessage‑like formatter (colors/styles only), while modern servers use the native Paper Adventure stack with full features.
+
 ## 📦 Other Plugins
 
 Also check out my other plugins for protecting your Minecraft server:

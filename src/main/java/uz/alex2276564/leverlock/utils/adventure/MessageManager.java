@@ -64,6 +64,16 @@ public interface MessageManager {
      */
     void sendMessage(@NotNull CommandSender sender, @NotNull String message, @NotNull String placeholder, @NotNull String replacement);
 
+    /**
+     * Send parsed message with multiple placeholders to player (USER INPUT - automatically escaped)
+     */
+    void sendMessage(@NotNull Player player, @NotNull String message, @NotNull Map<String, String> placeholders);
+
+    /**
+     * Send parsed message with multiple placeholders to CommandSender (USER INPUT - automatically escaped)
+     */
+    void sendMessage(@NotNull CommandSender sender, @NotNull String message, @NotNull Map<String, String> placeholders);
+
     // Keyed variants (subject to disabledKeys from messages.yml)
     void sendMessageKeyed(@NotNull Player player, String key, @NotNull String message);
     void sendMessageKeyed(@NotNull Player player, String key, @NotNull String message, @NotNull String placeholder, @NotNull String replacement);
