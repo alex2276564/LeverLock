@@ -22,7 +22,6 @@
 
 ## ⚠️ Important Notes About Redstone Exploits
 
-
 ### Core configs
 
 Using `use-faster-eigencraft-redstone: true` in legacy versions or `redstone-implementation: ALTERNATE_CURRENT` in newer versions of Paper **will not protect your server from all redstone-based exploits**. These settings may optimize performance but do not prevent all exploit scenarios.
