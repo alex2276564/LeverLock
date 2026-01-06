@@ -22,19 +22,32 @@
 
 ## ⚠️ Important Notes About Redstone Exploits
 
+
+### Core configs
+
 Using `use-faster-eigencraft-redstone: true` in legacy versions or `redstone-implementation: ALTERNATE_CURRENT` in newer versions of Paper **will not protect your server from all redstone-based exploits**. These settings may optimize performance but do not prevent all exploit scenarios.
 
 To ensure maximum protection against redstone-related exploits and lag, it is recommended to use **LeverLock** alongside [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered), as both plugins provide comprehensive safeguards beyond what Paper's settings offer.
 
 Make sure to configure your server with the appropriate plugins for full protection!
 
-If you are using the [AnarchyExploitFixes](https://github.com/xGinko/AnarchyExploitFixes) plugin, which also includes redstone and lever checks, you may not need to install LeverLock and AntiRedstoneClockRemastered. However, consider the following:
+### AnarchyExploitFixes
 
-- LeverLock and AntiRedstoneClockRemastered were specifically developed to counter particular exploits
-- AnarchyExploitFixes contains many different fixes, and its redstone checks might be less tested
-- It's recommended to test both options on your server to determine the most effective solution
+If you are using the [AnarchyExploitFixes](https://github.com/xGinko/AnarchyExploitFixes) plugin, which also includes redstone and lever checks, you have two options:
 
-The choice between specialized plugins (LeverLock + AntiRedstoneClockRemastered) and a comprehensive solution (AnarchyExploitFixes) depends on your server's specific needs and testing results.
+1. **Use LeverLock + AntiRedstoneClock-Remastered:**
+  - Keep LeverLock and AntiRedstoneClock-Remastered installed.
+  - In AnarchyExploitFixes, disable its own lever/redstone checks (to avoid double-handling the same events).
+  - This gives you specialized, focused protection from LeverLock/ARCR and lets AEF handle everything else.
+
+2. **Use only AnarchyExploitFixes for redstone/lever checks:**
+  - Rely on AEF's built-in redstone/lever protection.
+  - In this case you can safely remove LeverLock and AntiRedstoneClock-Remastered to reduce plugin count.
+  - Make sure to test AEF's redstone module in your environment, as its behavior and performance may differ.
+
+Which option is better depends on your server setup and testing:
+- LeverLock + AntiRedstoneClock-Remastered provide targeted fixes for specific exploits.
+- AnarchyExploitFixes is a wide-scope solution with many different checks; its redstone module may be less battle-tested in some setups.
 
 ## 📥 Installation
 
