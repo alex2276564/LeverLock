@@ -1,13 +1,68 @@
 version: v1
 ignore:
-  'SNYK-JAVA-ORGYAML-6056527':
-    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > org.yaml:snakeyaml@1.27':
-        reason: 'Paper API dependencies - not directly controllable'
-
-  'SNYK-JAVA-ORGYAML-2806360':
-    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > org.yaml:snakeyaml@1.27':
-        reason: 'Paper API dependencies - not directly controllable'
-
+  # ----------------------------------------------------------------
+  # commons-lang 2.6 (from Paper API 1.16.5 - compileOnly)
+  # ----------------------------------------------------------------
   'SNYK-JAVA-COMMONSLANG-10734077':
     - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > commons-lang:commons-lang@2.6':
         reason: 'Paper API dependencies - not directly controllable'
+
+  # ----------------------------------------------------------------
+  # Guava 21.0 (from Paper API / BungeeCord chat - compileOnly)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-COMGOOGLEGUAVA-5710356':
+    - '*':
+        reason: 'Guava 21.0 is only pulled via Paper API / BungeeCord chat as compileOnly; plugin does not shade or ship Guava.'
+
+  'SNYK-JAVA-COMGOOGLEGUAVA-1015415':
+    - '*':
+        reason: 'Guava 21.0 is only pulled via Paper API / BungeeCord chat as compileOnly; plugin does not shade or ship Guava.'
+
+  'SNYK-JAVA-COMGOOGLEGUAVA-32236':
+    - '*':
+        reason: 'Guava 21.0 is only pulled via Paper API / BungeeCord chat as compileOnly; plugin does not shade or ship Guava.'
+
+  # ----------------------------------------------------------------
+  # JUnit 4.10 (from Paper API - test / compileOnly)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-JUNIT-1017047':
+    - '*':
+        reason: 'JUnit 4.10 is only used as a test/compileOnly dependency via Paper API; not present in the final plugin JAR on production servers.'
+
+  # ----------------------------------------------------------------
+  # SnakeYAML 1.27 (from Paper API - compileOnly)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-ORGYAML-6056527':
+    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > org.yaml:snakeyaml@1.27':
+        reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
+
+  'SNYK-JAVA-ORGYAML-2806360':
+    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > org.yaml:snakeyaml@1.27':
+        reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
+
+  'SNYK-JAVA-ORGYAML-3016888':
+    - '*':
+        reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
+
+  'SNYK-JAVA-ORGYAML-3113851':
+    - '*':
+        reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
+
+  'SNYK-JAVA-ORGYAML-3016889':
+    - '*':
+        reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
+
+  'SNYK-JAVA-ORGYAML-3016891':
+    - '*':
+        reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
+
+  # ----------------------------------------------------------------
+  # SnakeYAML 1.27 (Paper) + 1.33 (Okaeri, shaded)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-ORGYAML-3152153':
+    - '*':
+        reason: |
+          SnakeYAML 1.27 is only from Paper API (compileOnly, server-provided),
+          and SnakeYAML 1.33 is shaded via Okaeri and used exclusively for
+          trusted admin-controlled config files (no untrusted user YAML input).
+          The plugin does not expose generic YAML parsing to players.

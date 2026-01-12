@@ -1,0 +1,27 @@
+# ================================================================
+# 🔗 Linkspector Configuration
+# ================================================================
+# Checks Markdown files for broken links
+# Documentation: https://github.com/UmbrellaDocs/linkspector
+# ================================================================
+
+# Directories to scan
+dirs:
+  - .
+
+# Use .gitignore rules
+useGitIgnore: true
+
+# ================================================================
+# 🚫 IGNORE PATTERNS
+# ================================================================
+# Some sites block automated requests (403 Forbidden)
+# These are legitimate sites but reject bot traffic
+# ================================================================
+
+ignorePatterns:
+  # Bukkit - blocks automated scrapers
+  - pattern: '^https://dev\.bukkit\.org/.*$'
+
+  # SpigotMC - blocks automated scrapers
+  - pattern: '^https://www\.spigotmc\.org/.*$'

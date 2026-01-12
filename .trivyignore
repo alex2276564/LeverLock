@@ -1,0 +1,64 @@
+# ================================================================
+# Trivy Ignore Rules for Minecraft Plugin
+# ================================================================
+# These vulnerabilities are either:
+# • From compileOnly/test dependencies (not in the final shaded JAR)
+# • Or used only for trusted admin-controlled config files
+# ================================================================
+
+# ----------------------------------------------------------------
+# Guava 21.0 (from Paper API - compileOnly)
+# ----------------------------------------------------------------
+# Paper API 1.16.5 brings com.google.guava:guava:21.0 as a dependency.
+# It is marked as compileOnly in build.gradle, so it is provided by
+# the server runtime and not shaded into the final plugin JAR.
+# ----------------------------------------------------------------
+CVE-2018-10237
+CVE-2023-2976
+CVE-2020-8908
+
+# ----------------------------------------------------------------
+# commons-lang 2.6 (from Paper API - compileOnly)
+# ----------------------------------------------------------------
+# commons-lang:commons-lang:2.6 is also coming from Paper API and is
+# compileOnly in this plugin. It is not bundled into the final JAR.
+# ----------------------------------------------------------------
+CVE-2025-48924
+
+# ----------------------------------------------------------------
+# JUnit 4.10 (from Paper API / test-only)
+# ----------------------------------------------------------------
+# JUnit is a test-only dependency (or from Paper API). It is never
+# included in the runtime plugin JAR on production servers.
+# ----------------------------------------------------------------
+CVE-2020-15250
+
+# ----------------------------------------------------------------
+# SnakeYAML 1.27 (transitive from Paper API - compileOnly)
+# ----------------------------------------------------------------
+# Paper API depends on org.yaml:snakeyaml:1.27. This dependency is
+# compileOnly in the plugin and provided by the server itself.
+# The plugin does not control or ship this SnakeYAML instance.
+# ----------------------------------------------------------------
+CVE-2022-1471
+CVE-2022-25857
+CVE-2022-38749
+CVE-2022-38750
+CVE-2022-38751
+CVE-2022-38752
+CVE-2022-41854
+
+# ----------------------------------------------------------------
+# SnakeYAML 1.33 (from okaeri-configs - shaded into plugin)
+# ----------------------------------------------------------------
+# The plugin shades its own isolated SnakeYAML (1.33) via
+# okaeri-configs-yaml-snakeyaml. This SnakeYAML instance is used ONLY
+# for parsing trusted configuration files controlled by the server
+# administrator (no untrusted user input).
+#
+# Risk assessment:
+# • No direct user-controlled YAML
+# • Only local config files in the plugin data folder
+# • Shaded and relocated to avoid conflicts with server SnakeYAML
+# ----------------------------------------------------------------
+CVE-2022-1471

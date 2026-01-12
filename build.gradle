@@ -1,102 +1,226 @@
+// ================================================================
+// 🎮 LeverLock - Minecraft Plugin
+// ================================================================
+// 📖 Repository: https://github.com/alex2276564/LeverLock
+// 🔧 Build tool: Gradle
+// ☕ Java version: 17
+// 🎯 Target: Paper/Folia 1.16.5+
+// ================================================================
+
+// ================================================================
+// 🔌 PLUGINS
+// ================================================================
+// Core build plugins and tooling
+// ================================================================
+
 plugins {
     id 'java'
-    id("xyz.jpenilla.run-paper") version "3.0.2"
-    id 'com.gradleup.shadow' version '9.3.1'
+    id 'com.gradleup.shadow' version '9.3.1'           // Shadow JAR (shading dependencies)
+    id 'xyz.jpenilla.run-paper' version '3.0.2'       // Paper test server runner
 }
+
+// ================================================================
+// 📦 PROJECT INFORMATION
+// ================================================================
 
 group = 'uz.alex2276564'
 version = '1.0.2'
 
+// ================================================================
+// ☕ JAVA CONFIGURATION
+// ================================================================
+
 def targetJavaVersion = 17
 
-repositories {
-    mavenCentral()
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
-    }
-    maven {
-        name = "okaeri"
-        url = "https://storehouse.okaeri.eu/repository/maven-public/"
-    }
-    maven {
-        name = "tcoded-releases"
-        url = "https://repo.tcoded.com/releases"
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+
+    // Use toolchain if current Java version is older than target
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
 }
 
-dependencies {
-    compileOnly "com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT"
+// ================================================================
+// 📚 REPOSITORIES
+// ================================================================
+// Maven repositories for dependency resolution
+// ================================================================
 
+repositories {
+    // ----------------------------------------------------------------
+    // 🌍 Public repositories
+    // ----------------------------------------------------------------
+    mavenCentral()
+
+    // ----------------------------------------------------------------
+    // 📦 Minecraft/Paper repositories
+    // ----------------------------------------------------------------
+    maven {
+        name = 'papermc-repo'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+
+    // ----------------------------------------------------------------
+    // 🔌 Plugin repositories
+    // ----------------------------------------------------------------
+    maven {
+        name = 'okaeri'
+        url = 'https://repo.okaeri.cloud/releases'
+    }
+
+    maven {
+        name = 'tcoded-releases'
+        url = 'https://repo.tcoded.com/releases'
+    }
+}
+
+// ================================================================
+// 📦 DEPENDENCIES
+// ================================================================
+// Project dependencies organized by category
+// ================================================================
+
+dependencies {
+    // ----------------------------------------------------------------
+    // 🎮 Minecraft API (compileOnly - provided by server)
+    // ----------------------------------------------------------------
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
+
+    // ----------------------------------------------------------------
+    // 🔌 Plugin APIs (compileOnly - optional soft dependencies)
+    // ----------------------------------------------------------------
+    compileOnly 'net.kyori:adventure-text-minimessage:4.26.1'
+
+    // ----------------------------------------------------------------
+    // 🛠️ Development tools (compileOnly + annotationProcessor)
+    // ----------------------------------------------------------------
     compileOnly 'org.projectlombok:lombok:1.18.42'
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
     testCompileOnly 'org.projectlombok:lombok:1.18.42'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 
+    // ----------------------------------------------------------------
+    // 📚 Libraries (implementation - will be shaded into final JAR)
+    // ----------------------------------------------------------------
+    // Configuration library
+    implementation 'eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.13'
+
+    // JSON serialization (required for legacy 1.16.x compatibility)
     implementation 'com.google.code.gson:gson:2.13.2'
 
-    compileOnly "net.kyori:adventure-text-minimessage:4.26.1"
-
-    implementation("eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.13")
-
+    // Folia compatibility layer
     implementation 'com.tcoded:FoliaLib:0.5.1'
 }
 
+// ================================================================
+// 🔒 DEPENDENCY LOCKING
+// ================================================================
+// Ensures reproducible builds and better security scanning
+//
+// 📝 How to use:
+// • When adding/updating dependencies, run:
+//   ./gradlew dependencies --write-locks
+// • Commit both build.gradle and gradle.lockfile
+// • Renovate will automatically update lockfile in PRs
+//
+// 🔐 Benefits:
+// • Reproducible builds across environments
+// • Security scanners (OSV, Trivy) see ALL dependencies
+// • Protection against dependency confusion attacks
+// ================================================================
 
-tasks {
-    runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.16.5")
-    }
+dependencyLocking {
+    lockAllConfigurations()
 }
 
-// ⚠️ NOTE: Shading is required for legacy compatibility!
-// Libraries like Gson may not work correctly on older server versions (1.16.x and below) if not shaded.
-// Shadowing ensures that all required dependencies are bundled and isolated within your final plugin JAR.
+// ================================================================
+// 📦 SHADOW JAR (SHADING)
+// ================================================================
+// ⚠️ IMPORTANT: Shading is REQUIRED for legacy compatibility!
+// 
+// Why shading is necessary:
+// • Old server versions (1.16.x and below) don't provide modern libraries
+// • Libraries like Gson may be outdated or missing on legacy servers
+// • Shading ensures all dependencies are bundled and isolated
+// • Prevents conflicts with other plugins using different versions
+// 
+// Relocation strategy:
+// • All shaded libraries moved to uz.alex2276564.leverlock.libs.*
+// • This prevents classpath conflicts with other plugins
+// ================================================================
+
 shadowJar {
+    // Don't append '-all' suffix to JAR filename
     archiveClassifier.set('')
 
+    // Merge service files (required for some libraries)
     mergeServiceFiles()
 
+    // ----------------------------------------------------------------
+    // 📦 Library relocations (prevent conflicts)
+    // ----------------------------------------------------------------
     relocate 'eu.okaeri.configs', 'uz.alex2276564.leverlock.libs.okaeri.configs'
-
+    relocate 'org.yaml.snakeyaml', 'uz.alex2276564.leverlock.libs.snakeyaml'
     relocate 'com.google.gson', 'uz.alex2276564.leverlock.libs.gson'
-
     relocate 'com.tcoded.folialib', 'uz.alex2276564.leverlock.libs.folialib'
 }
 
+// ================================================================
+// 🏗️ BUILD CONFIGURATION
+// ================================================================
+
+// Always build shadowJar instead of regular JAR
 build {
     dependsOn shadowJar
 }
 
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+// ================================================================
+// ⚙️ TASKS
+// ================================================================
+
+// ----------------------------------------------------------------
+// 🎮 Development server (run-paper plugin)
+// ----------------------------------------------------------------
+tasks {
+    runServer {
+        // Minecraft version for local testing
+        // Plugin JAR (shadowJar) will be automatically loaded
+        minecraftVersion('1.16.5')
     }
 }
 
+// ----------------------------------------------------------------
+// ☕ Java compilation
+// ----------------------------------------------------------------
 tasks.withType(JavaCompile).configureEach {
+    // Use UTF-8 encoding for source files
     options.encoding = 'UTF-8'
 
+    // Use --release flag if Java 10+ (better compatibility)
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release.set(targetJavaVersion)
     }
 }
 
+// ----------------------------------------------------------------
+// 📄 Resource processing (plugin.yml, config.yml, etc.)
+// ----------------------------------------------------------------
 processResources {
+    // Expand ${version} placeholder in plugin.yml
     def props = [version: version]
     inputs.properties props
+
     filteringCharset = 'UTF-8'
+
     filesMatching('plugin.yml') {
         expand props
     }

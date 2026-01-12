@@ -66,9 +66,9 @@ LeverLock supports both the full command `/leverlock` and the shorter alias `/ll
 
 - **Minecraft Versions:** 1.16.5 to the latest release
 - **Server Software:**
-    - ✅ [Paper](https://papermc.io/) (1.16.5 and newer) - **Fully Supported**
-    - ✅ [Folia](https://papermc.io/software/folia) - **Fully Supported** with optimized region-aware scheduling
-    - ❌ Spigot - Not supported
+  - ✅ [Paper](https://papermc.io/) (1.16.5 and newer) - **Fully Supported**
+  - ✅ [Folia](https://papermc.io/software/folia) - **Fully Supported** with optimized region-aware scheduling
+  - ❌ Spigot - Not supported
 - **Complementary Plugins:** [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered)
 
 ## 📝 Note

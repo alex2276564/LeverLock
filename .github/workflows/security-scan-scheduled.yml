@@ -60,7 +60,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           JAVA_HOME: /opt/java/openjdk # Enforce directory expected by the Snyk container
         with:
-          args: --severity-threshold=high --sarif-file-output=snyk.sarif
+          args: --sarif-file-output=snyk.sarif
 
       - name: Upload Snyk scan results to GitHub Security tab
         # Fix condition to work for both push and PR (excluding forks)
@@ -85,6 +85,13 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
+          exit-code: '1'
+
+      - name: Run Trivy (console report)
+        if: failure()
+        run: |
+          echo "==== Trivy console report ===="
+          trivy fs .
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
@@ -94,10 +101,10 @@ jobs:
   security-scan-osv:
     name: 🔐 Security Scan OSV
 
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.0
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.1
     with:
       fail-on-vuln: true
       scan-args: |-
-        --allow-no-lockfiles
+        --config=osv-scanner.toml
         --recursive
         ./

@@ -1,0 +1,86 @@
+# ================================================================
+# 🔐 OSV Scanner Configuration
+# ================================================================
+# Ignores known vulnerabilities that are not exploitable
+# in this project context
+# ================================================================
+
+# ----------------------------------------------------------------
+# Guava 21.0 (from Paper API - compileOnly)
+# ----------------------------------------------------------------
+# These vulnerabilities are in Paper API's dependencies
+# Paper API is compileOnly (provided by server at runtime)
+# These classes are NOT included in the final plugin JAR
+# ----------------------------------------------------------------
+
+[[IgnoredVulns]]
+id = "GHSA-5mg8-w23w-74h3"
+reason = "Guava 21.0 from Paper API (compileOnly, not in final JAR)"
+
+[[IgnoredVulns]]
+id = "GHSA-7g45-4rm6-3mm3"
+reason = "Guava 21.0 from Paper API (compileOnly, not in final JAR)"
+
+[[IgnoredVulns]]
+id = "GHSA-mvr2-9pj6-7w5j"
+reason = "Guava 21.0 from Paper API (compileOnly, not in final JAR)"
+
+# ----------------------------------------------------------------
+# commons-lang 2.6 (from Paper API - compileOnly)
+# ----------------------------------------------------------------
+
+[[IgnoredVulns]]
+id = "GHSA-j288-q9x7-2f5v"
+reason = "commons-lang 2.6 from Paper API (compileOnly, not in final JAR)"
+
+# ----------------------------------------------------------------
+# JUnit 4.10 (from Paper API - compileOnly, test dependency)
+# ----------------------------------------------------------------
+
+[[IgnoredVulns]]
+id = "GHSA-269g-pwp5-87pp"
+reason = "JUnit 4.10 from Paper API (compileOnly, test-only dependency)"
+
+# ----------------------------------------------------------------
+# SnakeYAML 1.27 (transitive from Paper API - compileOnly)
+# ----------------------------------------------------------------
+# ⚠️ Paper API 1.16.5 depends on SnakeYAML 1.27 (compileOnly)
+# This is NOT included in final JAR (provided by server runtime)
+# Paper server itself handles YAML parsing, not the plugin
+# ----------------------------------------------------------------
+
+[[IgnoredVulns]]
+id = "GHSA-3mc7-4q67-w48m"
+reason = "SnakeYAML 1.27 from Paper API (compileOnly, not in final JAR). Server runtime handles YAML parsing."
+
+[[IgnoredVulns]]
+id = "GHSA-98wm-3w3q-mw94"
+reason = "SnakeYAML 1.27 from Paper API (compileOnly, not in final JAR). Server runtime handles YAML parsing."
+
+[[IgnoredVulns]]
+id = "GHSA-9w3m-gqgf-c4p9"
+reason = "SnakeYAML 1.27 from Paper API (compileOnly, not in final JAR). Server runtime handles YAML parsing."
+
+[[IgnoredVulns]]
+id = "GHSA-c4r9-r8fh-9vj2"
+reason = "SnakeYAML 1.27 from Paper API (compileOnly, not in final JAR). Server runtime handles YAML parsing."
+
+[[IgnoredVulns]]
+id = "GHSA-hhhw-99gj-p3c3"
+reason = "SnakeYAML 1.27 from Paper API (compileOnly, not in final JAR). Server runtime handles YAML parsing."
+
+[[IgnoredVulns]]
+id = "GHSA-w37g-rhq8-7m4j"
+reason = "SnakeYAML 1.27 from Paper API (compileOnly, not in final JAR). Server runtime handles YAML parsing."
+
+# ----------------------------------------------------------------
+# SnakeYAML 1.33 (from okaeri-configs - implementation)
+# ----------------------------------------------------------------
+# ⚠️ This IS included in final JAR (shaded)
+# But it's used only for parsing trusted config files
+# (not untrusted user input), so risk is minimal
+# ----------------------------------------------------------------
+
+[[IgnoredVulns]]
+id = "GHSA-mjmj-j48q-9wg2"
+reason = "SnakeYAML 1.33 used only for trusted config files (admin-controlled), not user input. Shaded and isolated."
