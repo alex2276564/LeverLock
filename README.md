@@ -34,13 +34,13 @@ Make sure to configure your server with the appropriate plugins for full protect
 
 If you are using the [AnarchyExploitFixes](https://github.com/xGinko/AnarchyExploitFixes) plugin, which also includes redstone and lever checks, you have two options:
 
-**Option 1: Use LeverLock + AntiRedstoneClock-Remastered**
+#### Option 1: Use LeverLock + AntiRedstoneClock-Remastered
 
 * Keep LeverLock and AntiRedstoneClock-Remastered installed.
 * In AnarchyExploitFixes, disable its own lever/redstone checks (to avoid double-handling the same events).
 * This gives you specialized, focused protection from LeverLock/ARCR and lets AEF handle everything else.
 
-**Option 2: Use only AnarchyExploitFixes for redstone/lever checks**
+#### Option 2: Use only AnarchyExploitFixes for redstone/lever checks
 
 * Rely on AEF's built-in redstone/lever protection.
 * In this case you can safely remove LeverLock and AntiRedstoneClock-Remastered to reduce plugin count.
