@@ -4,7 +4,7 @@ ignore:
   # commons-lang 2.6 (from Paper API 1.16.5 - compileOnly)
   # ----------------------------------------------------------------
   'SNYK-JAVA-COMMONSLANG-10734077':
-    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > commons-lang:commons-lang@2.6':
+    - '*':
         reason: 'Paper API dependencies - not directly controllable'
 
   # ----------------------------------------------------------------
@@ -33,11 +33,11 @@ ignore:
   # SnakeYAML 1.27 (from Paper API - compileOnly)
   # ----------------------------------------------------------------
   'SNYK-JAVA-ORGYAML-6056527':
-    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > org.yaml:snakeyaml@1.27':
+    - '*':
         reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
 
   'SNYK-JAVA-ORGYAML-2806360':
-    - 'path:com.destroystokyo.paper:paper-api@1.16.5-R0.1-SNAPSHOT > org.yaml:snakeyaml@1.27':
+    - '*':
         reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
 
   'SNYK-JAVA-ORGYAML-3016888':

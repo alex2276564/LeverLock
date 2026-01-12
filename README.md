@@ -34,19 +34,24 @@ Make sure to configure your server with the appropriate plugins for full protect
 
 If you are using the [AnarchyExploitFixes](https://github.com/xGinko/AnarchyExploitFixes) plugin, which also includes redstone and lever checks, you have two options:
 
-1. **Use LeverLock + AntiRedstoneClock-Remastered:**
-  - Keep LeverLock and AntiRedstoneClock-Remastered installed.
-  - In AnarchyExploitFixes, disable its own lever/redstone checks (to avoid double-handling the same events).
-  - This gives you specialized, focused protection from LeverLock/ARCR and lets AEF handle everything else.
+**Option 1: Use LeverLock + AntiRedstoneClock-Remastered**
 
-2. **Use only AnarchyExploitFixes for redstone/lever checks:**
-  - Rely on AEF's built-in redstone/lever protection.
-  - In this case you can safely remove LeverLock and AntiRedstoneClock-Remastered to reduce plugin count.
-  - Make sure to test AEF's redstone module in your environment, as its behavior and performance may differ.
+* Keep LeverLock and AntiRedstoneClock-Remastered installed.
+* In AnarchyExploitFixes, disable its own lever/redstone checks (to avoid double-handling the same events).
+* This gives you specialized, focused protection from LeverLock/ARCR and lets AEF handle everything else.
 
-Which option is better depends on your server setup and testing:
-- LeverLock + AntiRedstoneClock-Remastered provide targeted fixes for specific exploits.
-- AnarchyExploitFixes is a wide-scope solution with many different checks; its redstone module may be less battle-tested in some setups.
+**Option 2: Use only AnarchyExploitFixes for redstone/lever checks**
+
+* Rely on AEF's built-in redstone/lever protection.
+* In this case you can safely remove LeverLock and AntiRedstoneClock-Remastered to reduce plugin count.
+* Make sure to test AEF's redstone module in your environment, as its behavior and performance may differ.
+
+**Which option is better?**
+
+It depends on your server setup and testing:
+
+* LeverLock + AntiRedstoneClock-Remastered provide targeted fixes for specific exploits.
+* AnarchyExploitFixes is a wide-scope solution with many different checks; its redstone module may be less battle-tested in some setups.
 
 ## 📥 Installation
 
@@ -59,24 +64,24 @@ Which option is better depends on your server setup and testing:
 
 LeverLock supports both the full command `/leverlock` and the shorter alias `/ll` for all commands (requires `leverlock.command` permission).
 
-- `/ll help` - Show help information (requires `leverlock.command`)
-- `/ll reload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
+* `/ll help` - Show help information (requires `leverlock.command`)
+* `/ll reload` - Reloads the plugin configuration (requires `leverlock.reload` permission)
 
 ## 🛠️ Compatibility
 
-- **Minecraft Versions:** 1.16.5 to the latest release
-- **Server Software:**
-  - ✅ [Paper](https://papermc.io/) (1.16.5 and newer) - **Fully Supported**
-  - ✅ [Folia](https://papermc.io/software/folia) - **Fully Supported** with optimized region-aware scheduling
-  - ❌ Spigot - Not supported
-- **Complementary Plugins:** [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered)
+* **Minecraft Versions:** 1.16.5 to the latest release
+* **Server Software:**
+  * ✅ [Paper](https://papermc.io/) (1.16.5 and newer) - **Fully Supported**
+  * ✅ [Folia](https://papermc.io/software/folia) - **Fully Supported** with optimized region-aware scheduling
+  * ❌ Spigot - Not supported
+* **Complementary Plugins:** [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered)
 
 ## 📝 Note
 
 **Native MiniMessage Support:** Plugin uses only native Kyori Adventure MiniMessage implementation without any backporting or compatibility layers:
 
-- **Paper 1.18+:** Full native MiniMessage support with all features including gradients, hover effects, click events, and advanced formatting
-- **Paper 1.16-1.17:** Partial support with automatic conversion to legacy ChatColor codes. Supported features include basic colors (`<red>`, `<blue>`, etc.), text styles (`<bold>`, `<italic>`, `<underlined>`, `<strikethrough>`, `<obfuscated>`), and reset tags (`<reset>`). Advanced features like gradients and hover effects are automatically stripped without causing errors.
+* **Paper 1.18+:** Full native MiniMessage support with all features including gradients, hover effects, click events, and advanced formatting
+* **Paper 1.16-1.17:** Partial support with automatic conversion to legacy ChatColor codes. Supported features include basic colors (`<red>`, `<blue>`, etc.), text styles (`<bold>`, `<italic>`, `<underlined>`, `<strikethrough>`, `<obfuscated>`), and reset tags (`<reset>`). Advanced features like gradients and hover effects are automatically stripped without causing errors.
 
 You can use the [MiniMessage Web Editor](https://webui.advntr.dev/) to test and preview your formatting. The plugin will automatically adapt the formatting to your server's capabilities, so you can use the same configuration across different server versions.
 
@@ -86,10 +91,10 @@ You can use the [MiniMessage Web Editor](https://webui.advntr.dev/) to test and 
 
 Also check out my other plugins for protecting your Minecraft server:
 
-- [**PermGuard**](https://github.com/alex2276564/PermGuard)  
+* [**PermGuard**](https://github.com/alex2276564/PermGuard)  
   *PermGuard* - a plugin to enhance server security. It temporarily revokes admin permissions when a player joins the server and sending security alerts to Telegram, to prevent unauthorized access or potential security breaches. Admins can only restore permissions manually via the console using commands like `lp user playernick permission set *`.
 
-- [**NoMoreTNTChainCrash**](https://github.com/alex2276564/NoMoreTNTChainCrash)  
+* [**NoMoreTNTChainCrash**](https://github.com/alex2276564/NoMoreTNTChainCrash)  
   *NoMoreTNTChainCrash* is a Minecraft plugin designed to prevent server crashes and lag caused by excessive TNT explosions. It achieves this by ignoring TNT before automated chain explosions can occur, while still allowing players to manually detonate TNT as desired.
 
 > 🔍 **You can find more of my Minecraft plugins here:**  
