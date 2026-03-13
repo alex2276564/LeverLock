@@ -84,12 +84,17 @@ public class LegacyMessageManager implements MessageManager {
     }
 
     @Override
-    public @NotNull Component parseWithTrustedPlaceholders(@NotNull String message, @NotNull Map<String, String> trusted) {
-        // Trusted: do NOT escape user input
-        String processed = message;
+    public @NotNull Component parseWithTrustedPlaceholders(@NotNull String message,
+                                                           @NotNull Map<String, String> trusted) {
+        String processed = StringUtils.processEscapeSequences(message);
+
         for (Map.Entry<String, String> e : trusted.entrySet()) {
-            processed = processed.replace(e.getKey(), e.getValue());
+            String key = e.getKey();
+            String value = e.getValue();
+            // Replace <key> with value as-is (trusted: can contain MiniMessage-like tags)
+            processed = processed.replace("<" + key + ">", value);
         }
+
         return parse(processed);
     }
 
@@ -331,7 +336,7 @@ public class LegacyMessageManager implements MessageManager {
         return out.toString();
     }
 
-    private enum TagType { COLOR, STYLE }
+    private enum TagType {COLOR, STYLE}
 
     /**
      * @param code legacy code (&a, &l, etc.)
@@ -344,7 +349,10 @@ public class LegacyMessageManager implements MessageManager {
         List<Tag> list = new ArrayList<>(stack); // iteration is top->bottom
         Tag lastColor = null;
         for (int i = list.size() - 1; i >= 0; i--) {
-            if (list.get(i).type == TagType.COLOR) { lastColor = list.get(i); break; }
+            if (list.get(i).type == TagType.COLOR) {
+                lastColor = list.get(i);
+                break;
+            }
         }
         if (lastColor != null) out.append(lastColor.code);
         for (int i = list.size() - 1; i >= 0; i--) {
@@ -359,7 +367,10 @@ public class LegacyMessageManager implements MessageManager {
         boolean removed = false;
         while (!stack.isEmpty()) {
             Tag t = stack.pop();
-            if (!removed && p.test(t)) { removed = true; continue; }
+            if (!removed && p.test(t)) {
+                removed = true;
+                continue;
+            }
             tmp.push(t);
         }
         while (!tmp.isEmpty()) stack.push(tmp.pop());
