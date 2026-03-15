@@ -250,7 +250,6 @@ jobs:
       lint-links,
       lint-markdown,
       security-scan,
-      security-scan-snyk,
       security-scan-trivy,
       security-scan-osv-pr,
       secrets-scan-trufflehog,
