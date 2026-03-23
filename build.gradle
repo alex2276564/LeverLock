@@ -15,7 +15,7 @@
 
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '9.3.2'           // Shadow JAR (shading dependencies)
+    id 'com.gradleup.shadow' version '9.4.0'           // Shadow JAR (shading dependencies)
     id 'xyz.jpenilla.run-paper' version '3.0.2'       // Paper test server runner
 }
 
