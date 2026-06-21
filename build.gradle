@@ -114,8 +114,8 @@ dependencies {
     // Configuration library
     implementation 'eu.okaeri:okaeri-configs-yaml-snakeyaml:5.0.13'
 
-    // JSON serialization (required for legacy 1.16.x compatibility)
-    implementation 'com.google.code.gson:gson:2.14.0'
+    // JSON serialization
+    implementation 'com.alibaba.fastjson2:fastjson2:2.0.62'
 
     // Folia compatibility layer
     implementation 'com.tcoded:FoliaLib:0.5.2'
@@ -127,14 +127,15 @@ dependencies {
 // Ensures reproducible builds and better security scanning
 //
 // 📝 How to use:
-// • When adding/updating dependencies, run:
-//   ./gradlew dependencies --write-locks
-// • Commit both build.gradle and gradle.lockfile
-// • Renovate will automatically update lockfile in PRs
+// 1. If you update dependencies, first DELETE the existing lockfile:
+//    rm gradle.lockfile (or delete it manually)
+// 2. Then generate a fresh lock by running:
+//    ./gradlew dependencies --write-locks --refresh-dependencies
+// 3. Commit both build.gradle and the new gradle.lockfile
 //
 // 🔐 Benefits:
-// • Reproducible builds across environments
-// • Security scanners (OSV, Trivy) see ALL dependencies
+// • Reproducible builds across all environments
+// • Full visibility for security scanners (OSV, Trivy)
 // • Protection against dependency confusion attacks
 // ================================================================
 
@@ -170,7 +171,7 @@ shadowJar {
     // ----------------------------------------------------------------
     relocate 'eu.okaeri.configs', 'uz.alex2276564.leverlock.libs.okaeri.configs'
     relocate 'org.yaml.snakeyaml', 'uz.alex2276564.leverlock.libs.snakeyaml'
-    relocate 'com.google.gson', 'uz.alex2276564.leverlock.libs.gson'
+    relocate 'com.alibaba.fastjson2', 'uz.alex2276564.leverlock.libs.fastjson2'
     relocate 'com.tcoded.folialib', 'uz.alex2276564.leverlock.libs.folialib'
 }
 
@@ -178,9 +179,14 @@ shadowJar {
 // 🏗️ BUILD CONFIGURATION
 // ================================================================
 
-// Always build shadowJar instead of regular JAR
-build {
-    dependsOn shadowJar
+// Integrating shadowJar into the build lifecycle
+tasks.assemble {
+    dependsOn(shadowJar)
+}
+
+// Disable the standard JAR so that it doesn't overwrite the Shadow file
+tasks.jar {
+    enabled = false
 }
 
 // ================================================================

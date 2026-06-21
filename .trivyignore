@@ -49,6 +49,16 @@ CVE-2022-38752
 CVE-2022-41854
 
 # ----------------------------------------------------------------
+# Gson 2.8.0 (from Paper API - compileOnly)
+# ----------------------------------------------------------------
+# Paper API 1.16.5 depends on com.google.code.gson:gson:2.8.0.
+# This dependency is compileOnly in this plugin and provided by
+# the server runtime. The plugin does not bundle this Gson copy
+# and does not use it to deserialize untrusted data.
+# ----------------------------------------------------------------
+CVE-2022-25647
+
+# ----------------------------------------------------------------
 # SnakeYAML 1.33 (from okaeri-configs - shaded into plugin)
 # ----------------------------------------------------------------
 # The plugin shades its own isolated SnakeYAML (1.33) via

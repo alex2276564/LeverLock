@@ -7,6 +7,7 @@ import uz.alex2276564.leverlock.commands.framework.builder.BuiltCommand;
 import uz.alex2276564.leverlock.commands.framework.builder.MultiCommandManager;
 import uz.alex2276564.leverlock.config.LeverLockConfigManager;
 import uz.alex2276564.leverlock.listeners.PlayerLeverClickListener;
+import uz.alex2276564.leverlock.utils.HttpUtils;
 import uz.alex2276564.leverlock.utils.adventure.AdventureMessageManager;
 import uz.alex2276564.leverlock.utils.adventure.LegacyMessageManager;
 import uz.alex2276564.leverlock.utils.adventure.MessageManager;
@@ -15,12 +16,17 @@ import uz.alex2276564.leverlock.utils.runner.FoliaRunner;
 import uz.alex2276564.leverlock.utils.runner.Runner;
 import uz.alex2276564.leverlock.utils.UpdateChecker;
 
+import java.util.logging.Level;
+
 public final class LeverLock extends JavaPlugin {
     @Getter
     private static LeverLock instance;
 
     @Getter
     private Runner runner;
+
+    @Getter
+    private HttpUtils httpUtils;
 
     @Getter
     private LeverLockConfigManager configManager;
@@ -37,6 +43,7 @@ public final class LeverLock extends JavaPlugin {
 
         try {
             setupRunner();
+            setupHttpClient();
             setupMessageManager();
             setupConfig();
             setupBackupManager();
@@ -46,8 +53,7 @@ public final class LeverLock extends JavaPlugin {
 
             getLogger().info("LeverLock has been enabled successfully!");
         } catch (Exception e) {
-            getLogger().severe("Failed to enable LeverLock: " + e.getMessage());
-            e.printStackTrace();
+            getLogger().log(Level.SEVERE, "Failed to enable LeverLock", e);
             getServer().getPluginManager().disablePlugin(this);
         }
     }
@@ -59,6 +65,10 @@ public final class LeverLock extends JavaPlugin {
         if (runner.isFolia()) {
             getLogger().info("Folia detected - using RegionScheduler and EntityScheduler for optimal performance");
         }
+    }
+
+    private void setupHttpClient() {
+        this.httpUtils = new HttpUtils();
     }
 
     private void setupMessageManager() {
@@ -117,7 +127,7 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void checkUpdates() {
-        UpdateChecker updateChecker = new UpdateChecker(this, "alex2276564/LeverLock", runner);
+        UpdateChecker updateChecker = new UpdateChecker(this, "alex2276564/LeverLock", runner, httpUtils);
         updateChecker.checkForUpdates();
     }
 

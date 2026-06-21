@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
@@ -47,8 +48,7 @@ public final class BackupManager {
             try {
                 checkAndBackup();
             } catch (Exception e) {
-                plugin.getLogger().severe("Backup check failed: " + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Backup check failed", e);
             }
         });
     }
@@ -62,8 +62,7 @@ public final class BackupManager {
                 plugin.getLogger().info("Starting forced backup...");
                 createBackup();
             } catch (Exception e) {
-                plugin.getLogger().severe("Forced backup failed: " + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Forced backup failed", e);
             }
         });
     }

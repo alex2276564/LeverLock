@@ -10,6 +10,7 @@ import uz.alex2276564.leverlock.config.configs.mainconfig.MainConfigValidator;
 import uz.alex2276564.leverlock.config.configs.messagesconfig.MessagesConfigValidator;
 
 import java.io.File;
+import java.util.logging.Level;
 
 public class LeverLockConfigManager {
     private final LeverLock plugin;
@@ -31,8 +32,7 @@ public class LeverLockConfigManager {
 
             plugin.getLogger().info("Configuration system reloaded successfully!");
         } catch (Exception e) {
-            plugin.getLogger().severe("Failed to reload configuration: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE, "Failed to reload configuration", e);
         }
     }
 

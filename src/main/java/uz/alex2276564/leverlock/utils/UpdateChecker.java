@@ -1,22 +1,23 @@
 package uz.alex2276564.leverlock.utils;
 
-import com.google.gson.JsonObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.bukkit.plugin.java.JavaPlugin;
 import uz.alex2276564.leverlock.utils.runner.Runner;
-
-import java.net.HttpURLConnection;
 
 public class UpdateChecker {
     private final JavaPlugin plugin;
     private final String githubRepo;
     private final Runner runner;
     private final HttpUtils httpUtils;
+    private final String userAgent;
 
-    public UpdateChecker(JavaPlugin plugin, String githubRepo, Runner runner) {
+    public UpdateChecker(JavaPlugin plugin, String githubRepo, Runner runner, HttpUtils httpUtils) {
         this.plugin = plugin;
         this.githubRepo = githubRepo;
         this.runner = runner;
-        this.httpUtils = new HttpUtils();
+        this.httpUtils = httpUtils;
+        this.userAgent = plugin.getDescription().getName()
+                + "/" + plugin.getDescription().getVersion();
     }
 
     public void checkForUpdates() {
@@ -42,20 +43,23 @@ public class UpdateChecker {
 
     private String getLatestVersion() throws Exception {
         String apiUrl = "https://api.github.com/repos/" + githubRepo + "/releases/latest";
-        HttpUtils.HttpResponse response = httpUtils.getResponse(apiUrl, "MinecraftPlugin");
 
-        if (response.responseCode() == HttpURLConnection.HTTP_OK) {
-            JsonObject jsonObject = response.jsonBody();
-            String tagName = jsonObject.get("tag_name").getAsString();
-            
-            if (SecurityUtils.containsSuspiciousPatterns(tagName)) {
-                plugin.getLogger().warning("Suspicious version tag detected from GitHub API, blocking update check");
-                return "blocked";
+        HttpUtils.HttpResponse response = httpUtils.getJson(apiUrl, userAgent);
+
+        if (response.statusCode() == 200) {
+            JSONObject jsonObject = response.jsonBody();
+            if (jsonObject.isEmpty()) {
+                throw new Exception("GitHub API returned empty or invalid JSON body");
+            }
+
+            String tagName = jsonObject.getString("tag_name");
+            if (tagName == null) {
+                throw new Exception("GitHub API response does not contain tag_name");
             }
 
             return SecurityUtils.sanitize(tagName, SecurityUtils.SanitizeType.VERSION);
         } else {
-            throw new Exception("GitHub API returned HTTP " + response.responseCode());
+            throw new Exception("GitHub API returned HTTP " + response.statusCode());
         }
     }
 }

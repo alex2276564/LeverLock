@@ -57,6 +57,13 @@ ignore:
         reason: 'SnakeYAML 1.27 is provided by Paper API as compileOnly; plugin does not bundle this copy and does not control server runtime YAML parsing.'
 
   # ----------------------------------------------------------------
+  # Gson 2.8.0 (from Paper API - compileOnly)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-COMGOOGLECODEGSON-1730327':
+    - '*':
+        reason: 'Gson 2.8.0 is only pulled via Paper API as compileOnly; plugin does not ship or use this Gson copy to deserialize untrusted data.'
+
+  # ----------------------------------------------------------------
   # SnakeYAML 1.27 (Paper) + 1.33 (Okaeri, shaded)
   # ----------------------------------------------------------------
   'SNYK-JAVA-ORGYAML-3152153':

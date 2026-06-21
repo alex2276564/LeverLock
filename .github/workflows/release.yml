@@ -1,0 +1,345 @@
+name: Release Minecraft Plugin
+
+# =============================================================================
+# WORKFLOW CONFIG
+# -----------------------------------------------------------------------------
+# PLUGIN_NAME  — human-readable plugin name used for artifacts & releases.
+# JAVA_VERSION — JDK version used for build and analysis.
+# JAVA_DIST    — JDK distribution.
+# =============================================================================
+env:
+  PLUGIN_NAME: LeverLock
+  JAVA_VERSION: '17'
+  JAVA_DIST: 'temurin'
+
+# =============================================================================
+# Security model for GitHub Actions: action versioning & runner egress
+#
+# RATIONALE
+# ---------
+# This is an open-source project maintained by a single developer.
+# Threat model (for CI / GitHub Actions specifically):
+# - Third-party GitHub Actions and build tools may eventually be compromised.
+# - There is no capacity to manually review SHA-pinned action diffs on every
+#   update.
+# - Therefore, the primary defence against malicious GitHub Actions is
+#   runtime monitoring and egress control on the runner, not version pinning.
+#
+# ACTION VERSIONING
+# -----------------
+# All third-party actions are referenced using @main / @master or the latest
+# convenient semver tag. We do NOT treat tag pinning as a strong security
+# control in this repository.
+#
+# SHA pinning is intentionally NOT used:
+# - It only provides strong guarantees when combined with manual review of
+#   every upstream commit, which this project cannot sustain.
+# - Without that review discipline, SHA pins can still point to malicious
+#   code that was present before the pin was taken, and they add maintenance
+#   overhead without realistic benefit here.
+#
+# Semver/tag pinning is also NOT enforced as a primary control:
+# - Tags on GitHub are mutable; recent supply-chain incidents (e.g. compromised
+#   actions overwriting historical tags) have shown that tag pinning alone does
+#   not reliably prevent malicious updates.
+#
+# Primary CI / GitHub Actions supply-chain controls:
+# - step-security/harden-runner is used in every job to protect the CI runner:
+#   * monitors outbound network, file, and process activity at runtime;
+#   * enforces a Global Block List of known-malicious endpoints maintained
+#     by StepSecurity's SOC;
+#   * supports per-job egress allowlists in block mode to limit exfiltration
+#     impact if an action or dependency is compromised.
+#
+# EGRESS POLICY (step-security/harden-runner)
+# ------------------------------------------
+# High-risk jobs (write permissions / secrets / CD & publishing):
+# - egress-policy: block with an explicit allowed-endpoints allowlist.
+#   Rationale: limits the blast radius if an action or dependency is
+#   compromised and tries to exfiltrate data.
+#
+# Low-risk jobs (read-only, no secrets):
+# - egress-policy: audit.
+#   Rationale: scanning tools may legitimately contact varying endpoints
+#   across versions; strict blocking would require frequent maintenance
+#   for little benefit when no sensitive credentials are present.
+#
+# See Harden-Runner docs:
+#   https://docs.stepsecurity.io/harden-runner
+# =============================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes (markdown supported)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # ================================================================
+  # 🏗️ BUILD: build JAR and compute SHA-256
+  # ================================================================
+  build:
+    name: 🏗️ Build plugin
+    runs-on: ubuntu-latest
+
+    outputs:
+      jar_file: ${{ steps.jar.outputs.jar_file }}
+      jar_name: ${{ steps.jar.outputs.jar_name }}
+      sha256: ${{ steps.jar.outputs.sha256 }}
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@main
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          persist-credentials: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DIST }})
+        uses: actions/setup-java@main
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DIST }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@main
+
+      - name: Check Gradle version matches input
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          GRADLE_VERSION=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
+          echo "Gradle project version: $GRADLE_VERSION"
+          if [ "$GRADLE_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "::error::Version mismatch: Gradle=$GRADLE_VERSION, input=$RELEASE_VERSION"
+            exit 1
+          fi
+
+      - name: Build plugin (reproducible)
+        run: |
+          SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          export SOURCE_DATE_EPOCH
+          ./gradlew clean build --no-daemon
+
+      - name: Locate JAR and compute SHA-256
+        id: jar
+        run: |
+          # Use printf instead of ls to avoid SC2010, still filter out -plain.jar
+          JAR_FILE=$(printf '%s\n' build/libs/*.jar 2>/dev/null \
+            | grep -v '\-plain\.jar' \
+            | head -1)
+
+          # If glob didn't match, JAR_FILE will literally be "build/libs/*.jar"
+          if [ -z "$JAR_FILE" ] || [ "$JAR_FILE" = 'build/libs/*.jar' ]; then
+            echo "::error::No JAR found in build/libs/"
+            exit 1
+          fi
+
+          JAR_NAME=$(basename "$JAR_FILE")
+          SHA=$(sha256sum "$JAR_FILE" | cut -d' ' -f1)
+
+          {
+            echo "jar_file=$JAR_FILE"
+            echo "jar_name=$JAR_NAME"
+            echo "sha256=$SHA"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Built JAR: $JAR_FILE"
+          echo "SHA-256 : $SHA"
+
+      - name: Upload JAR as workflow artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: plugin-jar
+          path: ${{ steps.jar.outputs.jar_file }}
+          retention-days: 3
+          if-no-files-found: error
+
+  # ================================================================
+  # 🔏 SLSA PROVENANCE (Gradle SLSA3 builder)
+  #
+  # Hardening note:
+  # We cannot attach step-security/harden-runner to this job because it uses
+  # a reusable workflow via "uses:". GitHub does not allow injecting extra
+  # steps into a called reusable workflow, so any egress restrictions would
+  # need to be implemented in the upstream SLSA builder workflow itself.
+  # ================================================================
+  provenance:
+    name: 🔏 SLSA Provenance (SLSA3)
+    needs: build
+
+    permissions:
+      actions: read
+      id-token: write   # required for Sigstore/OIDC signing
+      contents: write   # required to upload provenance as artifact
+
+    # SLSA Gradle builder: MUST be pinned to exact semver tag (vX.Y.Z)
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_gradle_slsa3.yml@v2.1.0
+    with:
+      # Path(s) to artifacts to attest, relative to repo root.
+      # This path must match what `./gradlew build` produces.
+      artifact-list: ./build/libs/${{ needs.build.outputs.jar_name }}
+      # Repo is public, so we explicitly allow logging to public Rekor
+      rekor-log-public: true
+
+  # ================================================================
+  # 🚀 GITHUB RELEASE
+  # ================================================================
+  release:
+    name: 🚀 GitHub Release
+    needs: [ build, provenance ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@main
+        with:
+          egress-policy: audit
+
+      - name: Download plugin JAR
+        uses: actions/download-artifact@main
+        with:
+          name: plugin-jar
+          path: dist
+
+      - name: Download SLSA attestations artifact
+        uses: actions/download-artifact@main
+        with:
+          # The artifact name varies, but always ends with “-slsa-attestations”
+          pattern: '*-slsa-attestations'
+          path: slsa
+          merge-multiple: true
+
+      - name: Extract SLSA provenance file
+        shell: bash
+        env:
+          JAR_NAME: ${{ needs.build.outputs.jar_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          # Unzip all .tgz files that may have arrived
+          shopt -s nullglob
+          for tgz in slsa/**/*.tgz slsa/*.tgz; do
+            echo "Unpacking $tgz"
+            tar -xzf "$tgz" -C slsa
+          done
+
+          # Find a .slsa file
+          SLSA_FILE=$(find slsa -type f -name '*.slsa' | head -1)
+          if [ -z "$SLSA_FILE" ]; then
+            echo "::error::No .slsa provenance file found in SLSA artifact"
+            find slsa -maxdepth 3 -type f || true
+            exit 1
+          fi
+
+          # Copy it next to the JAR file and give it a descriptive name
+          cp -- "$SLSA_FILE" "dist/${JAR_NAME}.build.slsa"
+          echo "Provenance copied to dist/${JAR_NAME}.build.slsa"
+
+          echo "=== dist contents ==="
+          ls -R dist
+
+      - name: Create GitHub Release
+        # zizmor: softprops/action-gh-release is intentionally used over
+        # `gh release` CLI — it provides atomic asset upload, glob support,
+        # and release update semantics not easily replicated with the CLI.
+        uses: softprops/action-gh-release@main # zizmor: ignore[superfluous-actions]
+        with:
+          # No automatic "v" prefix: the tag will be exactly what you type
+          # in the "release_version" input (e.g. "1.0.0").
+          tag_name: ${{ inputs.release_version }}
+          name: ${{ env.PLUGIN_NAME }} ${{ inputs.release_version }}
+          body: |
+            ${{ inputs.release_notes }}
+
+            ---
+
+            <details>
+            <summary><strong>Click to view how to verify this build (checksums & SLSA)</strong></summary>
+
+            ### 1. Verify SHA-256 checksum
+
+            After downloading the JAR from this release, run:
+
+            **Linux / macOS:**
+            ```bash
+            sha256sum ${{ needs.build.outputs.jar_name }}
+            ```
+
+            **Windows (PowerShell):**
+            ```powershell
+            Get-FileHash ${{ needs.build.outputs.jar_name }} -Algorithm SHA256
+            ```
+
+
+            Expected output:
+
+            ```text
+            ${{ needs.build.outputs.sha256 }}  ${{ needs.build.outputs.jar_name }}
+            ```
+
+            If the checksum does not match, **do not use this JAR** and please
+            open an issue: https://github.com/${{ github.repository }}/issues
+
+            ---
+
+            ### 2. Verify SLSA provenance (supply-chain integrity)
+
+            This project publishes SLSA Build Level 3 provenance for the JAR.
+            Advanced users can verify that the JAR was built by this repository's
+            GitHub Actions workflow without tampering.
+
+            #### 2.1. Download both:
+               - `${{ needs.build.outputs.jar_name }}`
+               - `${{ needs.build.outputs.jar_name }}.build.slsa`
+
+            #### 2.2. Install \`slsa-verifier\`
+
+            Option A — via Go:
+
+            ```bash
+            go install github.com/slsa-framework/slsa-verifier/v2/cmd/slsa-verifier@latest
+            ```
+
+            Option B — prebuilt binaries:
+
+            1. Go to: https://github.com/slsa-framework/slsa-verifier/releases/latest
+            2. Download the binary for your OS
+            3. Put it into your \$PATH and make it executable
+
+            #### 2.3. Run:
+
+            ```bash
+            slsa-verifier verify-artifact \
+              ${{ needs.build.outputs.jar_name }} \
+              --provenance-path ${{ needs.build.outputs.jar_name }}.build.slsa \
+              --source-uri github.com/${{ github.repository }}
+            ```
+
+            If verification fails, **do not trust this file** and open an issue:
+            https://github.com/${{ github.repository }}/issues
+
+            </details>
+          files: |
+            dist/${{ needs.build.outputs.jar_name }}
+            dist/${{ needs.build.outputs.jar_name }}.build.slsa
+          fail_on_unmatched_files: true
