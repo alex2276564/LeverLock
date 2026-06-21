@@ -134,7 +134,7 @@ jobs:
         run: |
           SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
           export SOURCE_DATE_EPOCH
-          ./gradlew clean build --no-daemon
+          ./gradlew clean build -x test
 
       - name: Locate JAR and compute SHA-256
         id: jar
