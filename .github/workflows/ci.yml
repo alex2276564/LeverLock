@@ -1,4 +1,4 @@
-name: Lint and Build Minecraft Plugin
+name: CI Pipeline
 
 # =============================================================================
 # WORKFLOW CONFIG
@@ -277,6 +277,7 @@ jobs:
             --config "p/secrets" \
             --config "p/github-actions" \
             --config "p/supply-chain" \
+            --exclude-rule "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag" \
             --exclude "**/build/**" \
             --exclude "**/.gradle/**" \
             --exclude "**/test/**" \

@@ -33,7 +33,7 @@ Whenever data comes from external or untrusted sources (user input, network resp
 
 - Filters prioritize **broad compatibility** (e.g., allow valid Unicode).
 
-- **Admins should enforce whitelisting** for sensitive inputs (e.g., command restrictions).
+- **Admins should enforce whitelisting** for sensitive inputs (e.g., plugin for command restrictions).
 
 **Future plans:**
 
@@ -77,10 +77,7 @@ is the primary supply-chain control instead.
 
 ## Security scanning
 
-The codebase and its dependencies are continuously monitored, with automated
-SCA/SAST/IAST scans triggered on every commit and executed automatically on a daily schedule.
-
-**Note:** IAST scans using AI agents are conducted manually ~2-4 times/year during major refactoring or upon request.
+Security scans (SCA/SAST/IAST) covering the codebase, its dependencies, and the CI/GitHub Actions pipeline are run regularly: SCA/SAST checks are triggered automatically on every commit and on a daily schedule, while deeper IAST scans (using AI agents) are launched manually during major refactors or upon request.
 
 ## **Text / formatting injection**
 

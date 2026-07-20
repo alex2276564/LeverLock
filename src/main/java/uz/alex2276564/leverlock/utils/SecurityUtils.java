@@ -111,7 +111,7 @@ public class SecurityUtils {
      * - allow Unicode letters (\p{L}), digits (\p{N}), underscore and dash
      * - strip everything else.
      * <p>
-     * This keeps the logic permissive enough for Russian/Unicode names,
+     * This keeps the logic permissive enough for International/Unicode names,
      * but prevents control characters and most weird symbols.
      */
     private static final Pattern PLAYER_NAME_STRIP =
@@ -284,7 +284,7 @@ public class SecurityUtils {
      * - Remove any character that is NOT a Unicode letter, digit, underscore or dash.
      * - If the result is empty, caller will replace with default ("player").
      * <p>
-     * This allows Russian/Unicode nicknames and long names, but strips control
+     * This allows International/Unicode nicknames and long names, but strips control
      * characters and weird symbols.
      */
     private static String sanitizePlayerName(String input) {
@@ -300,7 +300,7 @@ public class SecurityUtils {
      * <p>
      * NOTE:
      * - We deliberately do NOT block Unicode / non-ASCII here.
-     * Russian commands like "/принять" will work fine.
+     * International commands like "/принять" will work fine.
      */
     private static String sanitizeCommand(String input) {
         return COMMAND_DANGEROUS.matcher(input).replaceAll("");
