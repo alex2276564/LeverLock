@@ -1,42 +1,51 @@
 package uz.alex2276564.leverlock.utils;
 
 import com.alibaba.fastjson2.JSONObject;
-import org.bukkit.plugin.java.JavaPlugin;
 import uz.alex2276564.leverlock.utils.runner.Runner;
 
+import java.util.logging.Logger;
+
 public class UpdateChecker {
-    private final JavaPlugin plugin;
+
+    private final String pluginName;
+    private final String currentVersion;
     private final String githubRepo;
     private final Runner runner;
     private final HttpUtils httpUtils;
     private final String userAgent;
+    private final Logger logger;
 
-    public UpdateChecker(JavaPlugin plugin, String githubRepo, Runner runner, HttpUtils httpUtils) {
-        this.plugin = plugin;
+    public UpdateChecker(String pluginName,
+                         String currentVersion,
+                         String githubRepo,
+                         Runner runner,
+                         HttpUtils httpUtils,
+                         Logger logger) {
+        this.pluginName = pluginName;
+        this.currentVersion = currentVersion;
         this.githubRepo = githubRepo;
         this.runner = runner;
         this.httpUtils = httpUtils;
-        this.userAgent = plugin.getDescription().getName()
-                + "/" + plugin.getDescription().getVersion();
+        this.logger = logger;
+        this.userAgent = pluginName + "/" + currentVersion;
     }
 
     public void checkForUpdates() {
         runner.runAsync(() -> {
             try {
                 String latestVersion = getLatestVersion();
-                String currentVersion = plugin.getDescription().getVersion();
 
                 if (!latestVersion.equals(currentVersion)) {
-                    plugin.getLogger().info("");
-                    plugin.getLogger().info("New version available: " + latestVersion);
-                    plugin.getLogger().info("You are running version: " + currentVersion);
-                    plugin.getLogger().info("Download the latest version from: https://github.com/" + githubRepo + "/releases");
-                    plugin.getLogger().info("");
+                    logger.info("");
+                    logger.info("New version available: " + latestVersion);
+                    logger.info("You are running version: " + currentVersion);
+                    logger.info("Download the latest version from: https://github.com/" + githubRepo + "/releases");
+                    logger.info("");
                 } else {
-                    plugin.getLogger().info("You are running the latest version of " + plugin.getDescription().getName());
+                    logger.info("You are running the latest version of " + pluginName);
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Failed to check for updates: " + e.getMessage());
+                logger.warning("Failed to check for updates: " + e.getMessage());
             }
         });
     }

@@ -5,20 +5,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import uz.alex2276564.leverlock.LeverLock;
+import uz.alex2276564.leverlock.utils.SecurityUtils;
+import uz.alex2276564.leverlock.utils.adventure.MessageManager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class CommandManager implements TabExecutor {
+
     private final JavaPlugin plugin;
+    private final MessageManager messageManager;
     private BuiltCommand command;
 
-    public CommandManager(JavaPlugin plugin) {
+    public CommandManager(JavaPlugin plugin, MessageManager messageManager) {
         this.plugin = plugin;
+        this.messageManager = messageManager;
     }
 
     public static CommandBuilder create(String name) {
@@ -27,25 +28,34 @@ public class CommandManager implements TabExecutor {
 
     public void register(BuiltCommand command) {
         this.command = command;
-        plugin.getCommand(command.name()).setExecutor(this);
+        Objects.requireNonNull(plugin.getCommand(command.name()),
+                        "Command '" + command.name() + "' is not defined in plugin.yml")
+                .setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender,
+                             @NotNull Command cmd,
+                             @NotNull String label,
+                             String[] args) {
         try {
             CommandPath path = findCommandPath(command, args);
             executeCommandPath(sender, path, args);
         } catch (Exception e) {
             String tmpl = "<red>Error executing command:</red> <gray><err></gray>";
-            LeverLock.getInstance().getMessageManager().sendMessage(sender, tmpl, "err", (e.getMessage() != null ? e.getMessage() : "unknown"));
+            String raw = (e.getMessage() != null ? e.getMessage() : "unknown");
+            String err = SecurityUtils.sanitize(raw, SecurityUtils.SanitizeType.ERROR_MESSAGE);
+            messageManager.sendMessage(sender, tmpl, "err", err);
         }
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender,
+                                      @NotNull Command cmd,
+                                      @NotNull String alias,
+                                      String[] args) {
         if (command == null) return new ArrayList<>();
-
         if (args.length == 0) return new ArrayList<>();
 
         CommandPath path = findCommandPath(command, Arrays.copyOf(args, args.length - 1));
@@ -106,7 +116,7 @@ public class CommandManager implements TabExecutor {
         // Check permission
         if (path.permission != null && !sender.hasPermission(path.permission)) {
             String tmpl = "<red>You don't have permission:</red> <yellow><perm>";
-            LeverLock.getInstance().getMessageManager().sendMessage(sender, tmpl, "perm", path.permission);
+            messageManager.sendMessage(sender, tmpl, "perm", path.permission);
             return;
         }
 
@@ -127,7 +137,6 @@ public class CommandManager implements TabExecutor {
                 helpCmd.executor().accept(sender, context);
                 return;
             }
-
         }
 
         // Show default help
@@ -159,7 +168,12 @@ public class CommandManager implements TabExecutor {
         return context;
     }
 
-    private void addArgumentCompletions(List<String> completions, ArgumentBuilder<?> arg, String partial, CommandSender sender, String[] fullArgs, CommandPath path) {
+    private void addArgumentCompletions(List<String> completions,
+                                        ArgumentBuilder<?> arg,
+                                        String partial,
+                                        CommandSender sender,
+                                        String[] fullArgs,
+                                        CommandPath path) {
         if (arg.getSuggestions() != null) {
             for (String suggestion : arg.getSuggestions()) {
                 if (suggestion != null && suggestion.toLowerCase().startsWith(partial.toLowerCase())) {
@@ -187,7 +201,7 @@ public class CommandManager implements TabExecutor {
     }
 
     private void showHelp(CommandSender sender, CommandPath path) {
-        LeverLock.getInstance().getMessageManager().sendMessage(sender,
+        messageManager.sendMessage(sender,
                 "<gold>=== " + command.name().toUpperCase() + " Help ===");
 
         for (Map.Entry<String, BuiltSubCommand> entry : path.subCommands.entrySet()) {
@@ -200,15 +214,17 @@ public class CommandManager implements TabExecutor {
                 }
                 fullCommand.append(" ").append(entry.getKey());
 
-                LeverLock.getInstance().getMessageManager().sendMessage(sender,
+                messageManager.sendMessage(sender,
                         "<yellow>" + fullCommand + " <gray>- " + desc);
             }
         }
     }
 
     // Helper class to store command path information
-    private record CommandPath(List<String> consumedArgs, Map<String, BuiltSubCommand> subCommands,
-                               List<ArgumentBuilder<?>> arguments, BiConsumer<CommandSender, CommandContext> executor,
+    private record CommandPath(List<String> consumedArgs,
+                               Map<String, BuiltSubCommand> subCommands,
+                               List<ArgumentBuilder<?>> arguments,
+                               BiConsumer<CommandSender, CommandContext> executor,
                                String permission) {
     }
 }

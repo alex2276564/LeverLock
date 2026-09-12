@@ -3,6 +3,23 @@ package uz.alex2276564.leverlock.commands.framework.builder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+/**
+ * Generic, low-level argument types for the command framework.
+ * <p>
+ * SECURITY NOTE:
+ * - These types perform only basic validation (null/empty/length/format).
+ * - They DO NOT use SecurityUtils or perform context-aware sanitization.
+ * - Values returned from ArgumentType are considered "raw" and may still
+ * contain untrusted user input.
+ * <p>
+ * Sanitization is applied later, at the boundaries:
+ * - when values are logged or shown to players,
+ * - when they are inserted into external services (HTTP, database, etc.),
+ * - or when they are used to construct commands/templates.
+ * <p>
+ * This keeps ArgumentType reusable and prevents accidental modification of
+ * values that are used as exact keys (e.g. player names for Bukkit.getPlayerExact).
+ */
 public abstract class ArgumentType<T> {
     public abstract T parse(String input) throws ArgumentParseException;
 

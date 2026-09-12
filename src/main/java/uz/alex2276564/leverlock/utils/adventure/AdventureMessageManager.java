@@ -8,8 +8,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import uz.alex2276564.leverlock.LeverLock;
 import uz.alex2276564.leverlock.utils.StringUtils;
+import uz.alex2276564.leverlock.utils.runner.Runner;
 
 import java.util.Collections;
 import java.util.Map;
@@ -19,10 +19,12 @@ import java.util.function.Supplier;
 public class AdventureMessageManager implements MessageManager {
 
     private final MiniMessage miniMessage;
+    private final Runner runner;
     private Supplier<Set<String>> disabledKeysSupplier = Collections::emptySet;
 
-    public AdventureMessageManager() {
+    public AdventureMessageManager(@NotNull Runner runner) {
         this.miniMessage = MiniMessage.miniMessage();
+        this.runner = runner;
     }
 
     @Override
@@ -82,8 +84,8 @@ public class AdventureMessageManager implements MessageManager {
     // ========= helpers =========
 
     private void sendToPlayer(Player player, Component component) {
-        var runner = LeverLock.getInstance().getRunner();
-        // On Paper this returns true → send immediately; on Folia checks region-thread ownership
+        // On Paper this typically returns true (main/global thread).
+        // On Folia it checks region-thread ownership.
         if (runner.isOwnedByCurrentRegion(player)) {
             player.sendMessage(component);
         } else {

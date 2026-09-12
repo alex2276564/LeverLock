@@ -16,12 +16,11 @@ import uz.alex2276564.leverlock.utils.runner.FoliaRunner;
 import uz.alex2276564.leverlock.utils.runner.Runner;
 import uz.alex2276564.leverlock.utils.UpdateChecker;
 
+import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class LeverLock extends JavaPlugin {
-    @Getter
-    private static LeverLock instance;
-
     @Getter
     private Runner runner;
 
@@ -37,19 +36,24 @@ public final class LeverLock extends JavaPlugin {
     @Getter
     private MessageManager messageManager;
 
+    @Getter
+    private UpdateChecker updateChecker;
+
+    @Getter
+    private LeverLockServices services;
+
     @Override
     public void onEnable() {
-        instance = this;
-
         try {
             setupRunner();
             setupHttpClient();
             setupMessageManager();
             setupConfig();
             setupBackupManager();
+            setupServices();
+            setupUpdateChecker();
             registerListeners();
             registerCommands();
-            checkUpdates();
 
             getLogger().info("LeverLock has been enabled successfully!");
         } catch (Exception e) {
@@ -74,7 +78,7 @@ public final class LeverLock extends JavaPlugin {
     private void setupMessageManager() {
         if (isMiniMessageAvailable()) {
             try {
-                messageManager = new AdventureMessageManager();
+                messageManager = new AdventureMessageManager(runner);
                 getLogger().info("Using Adventure MiniMessage for text formatting - full MiniMessage syntax supported");
                 return;
             } catch (Exception e) {
@@ -100,35 +104,62 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void setupConfig() {
-        configManager = new LeverLockConfigManager(this);
+        File dataFolder = getDataFolder();
+        Logger logger = getLogger();
+        this.configManager = new LeverLockConfigManager(
+                dataFolder,
+                logger,
+                messageManager
+        );
         configManager.reload();
     }
 
     private void setupBackupManager() {
-        backupManager = new BackupManager(this);
+        backupManager = new BackupManager(runner, getLogger(), getDataFolder().toPath());
 
         // Check for backup need on startup
         backupManager.checkAndBackupAsync();
 
         // Schedule periodic checks - daily (24 hours)
-        long dailyTicks = Runner.secondsToTicks(24 * 60 * 60);
+        long dailySeconds = 24L * 60L * 60L;
+        long dailyTicks = Runner.secondsToTicks(dailySeconds);
         runner.runAsyncTimer(() -> backupManager.checkAndBackupAsync(), dailyTicks, dailyTicks);
     }
 
+    private void setupServices() {
+        this.services = new LeverLockServices(
+                runner,
+                configManager,
+                messageManager,
+                getLogger()
+        );
+    }
+
+    private void setupUpdateChecker() {
+        this.updateChecker = new UpdateChecker(
+                getDescription().getName(),
+                getDescription().getVersion(),
+                "alex2276564/LeverLock",
+                runner,
+                httpUtils,
+                getLogger()
+        );
+
+        updateChecker.checkForUpdates();
+    }
+
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerLeverClickListener(this), this);
+        getServer().getPluginManager().registerEvents(
+                new PlayerLeverClickListener(configManager, runner, messageManager),
+                this
+        );
     }
 
     private void registerCommands() {
-        MultiCommandManager multiManager = new MultiCommandManager(this);
+        MultiCommandManager multiManager = new MultiCommandManager(this, services);
 
-        BuiltCommand leverLockCommand = LeverLockCommands.createLeverLockCommand();
-        multiManager.registerCommand( leverLockCommand);
-    }
-
-    private void checkUpdates() {
-        UpdateChecker updateChecker = new UpdateChecker(this, "alex2276564/LeverLock", runner, httpUtils);
-        updateChecker.checkForUpdates();
+        BuiltCommand permGuardCommand = LeverLockCommands.createLeverLockCommand(services);
+        multiManager.registerCommand(permGuardCommand);
     }
 
     @Override
