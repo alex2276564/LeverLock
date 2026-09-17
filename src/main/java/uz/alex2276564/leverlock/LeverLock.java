@@ -1,6 +1,5 @@
 package uz.alex2276564.leverlock;
 
-import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 import uz.alex2276564.leverlock.commands.LeverLockCommands;
 import uz.alex2276564.leverlock.commands.framework.builder.BuiltCommand;
@@ -21,25 +20,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class LeverLock extends JavaPlugin {
-    @Getter
+
     private Runner runner;
-
-    @Getter
     private HttpUtils httpUtils;
-
-    @Getter
     private LeverLockConfigManager configManager;
-
-    @Getter
-    private BackupManager backupManager;
-
-    @Getter
     private MessageManager messageManager;
-
-    @Getter
-    private UpdateChecker updateChecker;
-
-    @Getter
     private LeverLockServices services;
 
     @Override
@@ -115,6 +100,7 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void setupBackupManager() {
+        BackupManager backupManager;
         backupManager = new BackupManager(runner, getLogger(), getDataFolder().toPath());
 
         // Check for backup need on startup
@@ -123,7 +109,7 @@ public final class LeverLock extends JavaPlugin {
         // Schedule periodic checks - daily (24 hours)
         long dailySeconds = 24L * 60L * 60L;
         long dailyTicks = Runner.secondsToTicks(dailySeconds);
-        runner.runAsyncTimer(() -> backupManager.checkAndBackupAsync(), dailyTicks, dailyTicks);
+        runner.runAsyncTimer(backupManager::checkAndBackupAsync, dailyTicks, dailyTicks);
     }
 
     private void setupServices() {
@@ -136,7 +122,8 @@ public final class LeverLock extends JavaPlugin {
     }
 
     private void setupUpdateChecker() {
-        this.updateChecker = new UpdateChecker(
+        UpdateChecker updateChecker;
+        updateChecker = new UpdateChecker(
                 getDescription().getName(),
                 getDescription().getVersion(),
                 "alex2276564/LeverLock",
