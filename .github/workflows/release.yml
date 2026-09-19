@@ -267,7 +267,7 @@ jobs:
           # No automatic "v" prefix: the tag will be exactly what you type
           # in the "release_version" input (e.g. "1.0.0").
           tag_name: ${{ inputs.release_version }}
-          name: ${{ env.PLUGIN_NAME }} ${{ inputs.release_version }}
+          name: ${{ inputs.release_version }}
           body: |
             ${{ inputs.release_notes }}
 
