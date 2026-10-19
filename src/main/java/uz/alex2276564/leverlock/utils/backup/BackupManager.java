@@ -1,6 +1,7 @@
 package uz.alex2276564.leverlock.utils.backup;
 
 import org.jetbrains.annotations.NotNull;
+import uz.alex2276564.leverlock.utils.TimeUtils;
 import uz.alex2276564.leverlock.utils.runner.Runner;
 
 import java.io.IOException;
@@ -9,13 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,13 +22,7 @@ import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public final class BackupManager {
-    private static final Clock SYSTEM_CLOCK = Clock.system(ZoneId.systemDefault());
     private static final String BACKUPS_DIR_NAME = "backups";
-    private static final DateTimeFormatter DATE_FORMAT =
-            DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.ROOT);
-    private static final DateTimeFormatter DATE_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss", Locale.ROOT);
-
     private static final int BACKUP_INTERVAL_DAYS = 30;
 
     private final Runner runner;
@@ -82,7 +73,7 @@ public final class BackupManager {
         }
 
         Optional<LocalDate> lastBackup = findLastValidBackupDate();
-        LocalDate now = LocalDate.now(SYSTEM_CLOCK);
+        LocalDate now = TimeUtils.today();
         LocalDate threshold = now.minusDays(BACKUP_INTERVAL_DAYS);
 
         if (lastBackup.isEmpty()) {
@@ -104,7 +95,7 @@ public final class BackupManager {
             return Optional.empty();
         }
 
-        LocalDate today = LocalDate.now(SYSTEM_CLOCK);
+        LocalDate today = TimeUtils.today();
 
         try (Stream<Path> stream = Files.list(backupsDir)) {
             return stream
@@ -120,12 +111,12 @@ public final class BackupManager {
     private Optional<LocalDate> parseBackupDate(String dirName) {
         // Try parsing as full datetime first (dd.MM.yyyy_HH-mm-ss)
         try {
-            LocalDateTime dateTime = LocalDateTime.parse(dirName, DATE_TIME_FORMAT);
+            LocalDateTime dateTime = LocalDateTime.parse(dirName, TimeUtils.DATE_TIME_DMY_HMS_FILENAME);
             return Optional.of(dateTime.toLocalDate());
         } catch (Exception ignored) {
             // Try parsing as date only (dd.MM.yyyy)
             try {
-                return Optional.of(LocalDate.parse(dirName, DATE_FORMAT));
+                return Optional.of(LocalDate.parse(dirName, TimeUtils.DATE_DMY));
             } catch (Exception ignored2) {
                 return Optional.empty();
             }
@@ -133,13 +124,13 @@ public final class BackupManager {
     }
 
     private void createBackup() throws IOException {
-        LocalDateTime now = LocalDateTime.now(SYSTEM_CLOCK);
-        String backupName = DATE_FORMAT.format(now);
+        LocalDateTime now = TimeUtils.nowLocal();
+        String backupName = TimeUtils.DATE_DMY.format(now);
         Path backupPath = backupsDir.resolve(backupName);
 
         // If backup already exists today, add time suffix
         if (Files.exists(backupPath)) {
-            backupName = DATE_TIME_FORMAT.format(now);
+            backupName = TimeUtils.DATE_TIME_DMY_HMS_FILENAME.format(now);
             backupPath = backupsDir.resolve(backupName);
 
             // Extra safety: ensure unique name

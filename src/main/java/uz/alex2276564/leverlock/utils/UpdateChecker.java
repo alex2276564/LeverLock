@@ -55,20 +55,23 @@ public class UpdateChecker {
 
         HttpUtils.HttpResponse response = httpUtils.getJson(apiUrl, userAgent);
 
-        if (response.statusCode() == 200) {
-            JSONObject jsonObject = response.jsonBody();
-            if (jsonObject.isEmpty()) {
-                throw new Exception("GitHub API returned empty or invalid JSON body");
-            }
-
-            String tagName = jsonObject.getString("tag_name");
-            if (tagName == null) {
-                throw new Exception("GitHub API response does not contain tag_name");
-            }
-
-            return SecurityUtils.sanitize(tagName, SecurityUtils.SanitizeType.VERSION);
-        } else {
-            throw new Exception("GitHub API returned HTTP " + response.statusCode());
+        if (!response.isOk()) {
+            String reason = response.hasError()
+                    ? response.describeError()
+                    : "GitHub API returned HTTP " + response.statusCode();
+            throw new Exception(reason);
         }
+
+        JSONObject jsonObject = response.jsonBody();
+        if (jsonObject.isEmpty()) {
+            throw new Exception("GitHub API returned empty or invalid JSON body");
+        }
+
+        String tagName = jsonObject.getString("tag_name");
+        if (tagName == null) {
+            throw new Exception("GitHub API response does not contain tag_name");
+        }
+
+        return SecurityUtils.sanitize(tagName, SecurityUtils.SanitizeType.VERSION);
     }
 }
