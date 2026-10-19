@@ -5,6 +5,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/alex2276564/LeverLock?color=blue)](https://github.com/alex2276564/LeverLock/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Text Formatting](https://img.shields.io/badge/Text%20Formatting-🌈%20MiniMessage-ff69b4)](https://docs.advntr.dev/minimessage/)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
 
 **LeverLock** is a Minecraft plugin designed to prevent rapid lever interactions, which can potentially cause lag or be exploited for unintended game mechanics. It works as a complementary tool to [AntiRedstoneClock-Remastered](https://modrinth.com/plugin/antiredstoneclock-remastered), providing comprehensive protection against redstone-based lag and exploits.
 

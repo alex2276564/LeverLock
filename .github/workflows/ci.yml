@@ -12,62 +12,6 @@ env:
   JAVA_VERSION: '17'
   JAVA_DIST: 'temurin'
 
-# =============================================================================
-# Security model for GitHub Actions: action versioning & runner egress
-#
-# RATIONALE
-# ---------
-# This is an open-source project maintained by a single developer.
-# Threat model (for CI / GitHub Actions specifically):
-# - Third-party GitHub Actions and build tools may eventually be compromised.
-# - There is no capacity to manually review SHA-pinned action diffs on every
-#   update.
-# - Therefore, the primary defence against malicious GitHub Actions is
-#   runtime monitoring and egress control on the runner, not version pinning.
-#
-# ACTION VERSIONING
-# -----------------
-# All third-party actions are referenced using @main / @master or the latest
-# convenient semver tag. We do NOT treat tag pinning as a strong security
-# control in this repository.
-#
-# SHA pinning is intentionally NOT used:
-# - It only provides strong guarantees when combined with manual review of
-#   every upstream commit, which this project cannot sustain.
-# - Without that review discipline, SHA pins can still point to malicious
-#   code that was present before the pin was taken, and they add maintenance
-#   overhead without realistic benefit here.
-#
-# Semver/tag pinning is also NOT enforced as a primary control:
-# - Tags on GitHub are mutable; recent supply-chain incidents (e.g. compromised
-#   actions overwriting historical tags) have shown that tag pinning alone does
-#   not reliably prevent malicious updates.
-#
-# Primary CI / GitHub Actions supply-chain controls:
-# - step-security/harden-runner is used in every job to protect the CI runner:
-#   * monitors outbound network, file, and process activity at runtime;
-#   * enforces a Global Block List of known-malicious endpoints maintained
-#     by StepSecurity's SOC;
-#   * supports per-job egress allowlists in block mode to limit exfiltration
-#     impact if an action or dependency is compromised.
-#
-# EGRESS POLICY (step-security/harden-runner)
-# ------------------------------------------
-# High-risk jobs (write permissions / secrets / CD & publishing):
-# - egress-policy: block with an explicit allowed-endpoints allowlist.
-#   Rationale: limits the blast radius if an action or dependency is
-#   compromised and tries to exfiltrate data.
-#
-# Low-risk jobs (read-only, no secrets):
-# - egress-policy: audit.
-#   Rationale: scanning tools may legitimately contact varying endpoints
-#   across versions; strict blocking would require frequent maintenance
-#   for little benefit when no sensitive credentials are present.
-#
-# See Harden-Runner docs:
-#   https://docs.stepsecurity.io/harden-runner
-# =============================================================================
-
 on:
   push:
     branches: [ "main" ]
@@ -78,61 +22,40 @@ on:
 permissions:
   contents: read
 
+# A "-caller" suffix keeps this group distinct from any group a called
+# reusable workflow builds from "${{ github.workflow }}" on its own side.
+concurrency:
+  group: ${{ github.workflow }}-caller-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  lint-actions:
-    name: 🧹 Lint Actions
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@main
-        with:
-          egress-policy: audit
-
-      - name: Checkout repository
-        uses: actions/checkout@main
-        with:
-          persist-credentials: false
-
-      - name: Actionlint (Reviewdog)
-        uses: step-security/action-actionlint@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
-          fail_on_error: true
-          level: any
-          filter_mode: nofilter
-
   lint-renovate:
     name: 🧹 Lint Renovate
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@main
+        uses: step-security/setup-bun@v2.1.3
         with:
           bun-version: latest
 
       - name: Setup Socket Firewall
-        uses: socketdev/action@main
+        uses: socketdev/action@v1.3.2
         with:
           mode: firewall-free
 
@@ -142,7 +65,8 @@ jobs:
 
   lint-links:
     name: 🧹 Lint Links
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     permissions:
       contents: read
@@ -151,17 +75,17 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Lint Links
-        uses: umbrelladocs/action-linkspector@main
+        uses: umbrelladocs/action-linkspector@v1.5.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
@@ -169,28 +93,30 @@ jobs:
 
   lint-markdown:
     name: 🧹 Lint Markdown
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Lint Markdown files
-        uses: DavidAnson/markdownlint-cli2-action@main
+        uses: DavidAnson/markdownlint-cli2-action@v24.2.0
         with:
           globs: '**/*.md'
           config: '.markdownlint.jsonc'
 
   security-scan:
     name: 🔐 Security Scan CodeQL
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     permissions:
       contents: read
@@ -199,65 +125,65 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v4.39.0
         with:
           languages: java-kotlin
           queries: security-and-quality
 
       - name: Set up JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DIST }})
-        uses: actions/setup-java@main
+        uses: actions/setup-java@v6.1.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DIST }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@main
+        uses: gradle/actions/setup-gradle@v6.4.0
 
       - name: Build for CodeQL
         run: ./gradlew build -x test
 
       - name: CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v4.39.0
 
   security-scan-semgrep:
     name: 🔐 Security Scan Semgrep
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: security-scans
 
     permissions:
       contents: read
       security-events: write
-
-    env:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      actions: read
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@main
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.x'
 
       - name: Setup Socket Firewall
-        uses: socketdev/action@main
+        uses: socketdev/action@v1.3.2
         with:
           mode: firewall-free
 
@@ -265,9 +191,15 @@ jobs:
         run: sfw pip install semgrep
 
       - name: Setup Semgrep Pro Engine via Socket Firewall
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         run: sfw semgrep install-semgrep-pro
 
+      # Exclude mutable action tag rule because Semgrep does not support the modern
+      # actions.lockfile mechanism yet.
       - name: Run Semgrep
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         run: |
           semgrep scan \
             --pro \
@@ -281,21 +213,27 @@ jobs:
             --exclude "**/build/**" \
             --exclude "**/.gradle/**" \
             --exclude "**/test/**" \
-            --sarif --output semgrep.sarif \
+            --sarif-output semgrep.sarif \
             --error
 
       - name: Upload results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        # Fix condition to work for both push and PR (excluding forks)
+        if: ${{ always() &&
+          (github.event_name == 'push' ||
+          (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)) }}
+        uses: github/codeql-action/upload-sarif@v4.39.0
         with:
           sarif_file: semgrep.sarif
 
   security-scan-snyk:
     name: 🔐 Security Scan Snyk (push)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     # Skip security scan Snyk for PR (for PR we connect GitHub App integration Snyk)
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' }}
+
+    environment: security-scans
 
     permissions:
       contents: read
@@ -304,26 +242,26 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Set up JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DIST }})
-        uses: actions/setup-java@main
+        uses: actions/setup-java@v6.1.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DIST }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@main
+        uses: gradle/actions/setup-gradle@v6.4.0
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/gradle-9-jdk17@main
+        uses: snyk/actions/gradle-9-jdk17@v1.0.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           JAVA_HOME: /opt/java/openjdk # Enforce directory expected by the Snyk container
@@ -331,14 +269,15 @@ jobs:
           args: --sarif-file-output=snyk.sarif
 
       - name: Upload Snyk scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4.39.0
+        if: ${{ always() }}
         with:
           sarif_file: 'snyk.sarif'
 
   security-scan-trivy:
     name: 🔐 Security Scan Trivy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     permissions:
       contents: read
@@ -347,17 +286,17 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Run Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -366,18 +305,17 @@ jobs:
           exit-code: '1'
 
       - name: Run Trivy (console report)
-        if: failure()
+        if: ${{ failure() }}
         run: |
           echo "==== Trivy console report ===="
           trivy fs .
 
       - name: Upload Trivy scan results to GitHub Security tab
         # Fix condition to work for both push and PR (excluding forks)
-        if: |
-          always() &&
-          (github.event_name == 'push' || 
-           (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false))
-        uses: github/codeql-action/upload-sarif@v4
+        if: ${{ always() &&
+          (github.event_name == 'push' ||
+          (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)) }}
+        uses: github/codeql-action/upload-sarif@v4.39.0
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -415,37 +353,38 @@ jobs:
         --recursive
         ./
 
-  security-scan-zizmor:
-    name: 🔐 GitHub Actions Security (zizmor)
-    runs-on: ubuntu-latest
+  security-scan-jactionlint:
+    name: 🔐 Security Scan jactionlint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     permissions:
       contents: read
-      actions: read
       security-events: write
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
-      - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@main
+      - name: Run jactionlint (pedantic + online + strict exit)
+        uses: jdx/jactionlint@v2.2.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          profile: pedantic
+          online: strict
+          strict-exit: true
+          advanced-security: true
 
-  dependency-review:
-    name: 🧩 Dependency Review (PR)
-    runs-on: ubuntu-latest
-
-    # Skip Dependency Review for push
-    if: github.event_name == 'pull_request'
+  security-scan-supply-chain-guard:
+    name: 🔐 Security Scan supply-chain-guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     permissions:
       contents: read
@@ -453,46 +392,121 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: homeofe/supply-chain-guard@v6.5.9
+        with:
+          fail-on: low
+          comment-on-pr: true
+          refresh-catalog: true
+          exclude-rules: POLICY_SUPPRESSED_SEVERE
+
+  security-scan-gh-actions-lockfile:
+    name: 🔐 Security Scan GitHub Actions Lockfile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install gh-actions-lock extension
+        env:
+          RETRY_COUNT: 3
+          RETRY_DELAY: 30
+        run: |
+          for i in $(seq 1 "$RETRY_COUNT"); do
+            echo "Attempt $i of $RETRY_COUNT to install github/gh-actions-lock..."
+            if gh extension install github/gh-actions-lock; then
+              echo "Extension installed successfully!"
+              exit 0
+            fi
+          
+            if [ "$i" -lt "$RETRY_COUNT" ]; then
+              echo "Installation failed. Waiting $RETRY_DELAY seconds before next attempt..."
+              sleep "$RETRY_DELAY"
+            fi
+          done
+          
+          echo "Error: Failed to install extension after $RETRY_COUNT attempts."
+          exit 1
+
+      - name: Verify GitHub Actions lockfile
+        run: |
+          gh actions-lock --verify
+
+  dependency-review:
+    name: 🧩 Dependency Review (PR)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    # Skip Dependency Review for push
+    if: ${{ github.event_name == 'pull_request' }}
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@main
+        uses: actions/dependency-review-action@v5.0.0
         with:
           fail-on-severity: high
 
   secrets-scan-trufflehog:
     name: 🔑 Secrets Scan TruffleHog
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0  # Required for diff scan
 
       - name: TruffleHog Secrets Scan (full)
-        if: github.event_name != 'pull_request'
-        uses: trufflesecurity/trufflehog@main
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: trufflesecurity/trufflehog@v3.99.2
         with:
           path: ./
           extra_args: --results=verified,unknown
 
       - name: TruffleHog Secrets Scan (diff)
-        if: github.event_name == 'pull_request'
-        uses: trufflesecurity/trufflehog@main
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: trufflesecurity/trufflehog@v3.99.2
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
@@ -501,9 +515,9 @@ jobs:
 
   build-pr:
     name: 🏗️ Build Plugin (PR)
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'pull_request' }}
+    timeout-minutes: 20
     needs: [
-      lint-actions,
       lint-renovate,
       lint-links,
       lint-markdown,
@@ -511,20 +525,22 @@ jobs:
       security-scan-semgrep,
       security-scan-trivy,
       security-scan-osv-pr,
-      security-scan-zizmor,
+      security-scan-jactionlint,
+      security-scan-supply-chain-guard,
+      security-scan-gh-actions-lockfile,
+      dependency-review,
       secrets-scan-trufflehog,
-      dependency-review
     ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -532,28 +548,29 @@ jobs:
         run: chmod +x gradlew
 
       - name: Set up JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DIST }})
-        uses: actions/setup-java@main
+        uses: actions/setup-java@v6.1.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DIST }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@main
+        uses: gradle/actions/setup-gradle@v6.4.0
 
       - name: Build with Gradle
         run: ./gradlew build -x test
 
       - name: Upload artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ env.PLUGIN_NAME }}
           path: ${{ github.workspace }}/build/libs/
+          if-no-files-found: error
 
   build-push:
     name: 🏗️ Build Plugin (push)
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' }}
+    timeout-minutes: 20
     needs: [
-      lint-actions,
       lint-renovate,
       lint-links,
       lint-markdown,
@@ -562,19 +579,21 @@ jobs:
       security-scan-snyk,
       security-scan-trivy,
       security-scan-osv-push,
-      security-scan-zizmor,
+      security-scan-jactionlint,
+      security-scan-supply-chain-guard,
+      security-scan-gh-actions-lockfile,
       secrets-scan-trufflehog
     ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@main
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -582,19 +601,20 @@ jobs:
         run: chmod +x gradlew
 
       - name: Set up JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DIST }})
-        uses: actions/setup-java@main
+        uses: actions/setup-java@v6.1.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DIST }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@main
+        uses: gradle/actions/setup-gradle@v6.4.0
 
       - name: Build with Gradle
         run: ./gradlew build -x test
 
       - name: Upload artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ env.PLUGIN_NAME }}
           path: ${{ github.workspace }}/build/libs/
+          if-no-files-found: error

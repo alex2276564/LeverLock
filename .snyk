@@ -1,4 +1,22 @@
 version: v1
+
+# NOTE ON IGNORE PATTERNS
+# ------------------------
+# We intentionally use "*" in ignore rules to apply them to all paths
+# for a given vulnerability ID. This is done to reduce noise from
+# duplicated findings through multiple transitive dependency paths.
+#
+# Direct runtime dependencies that this plugin controls (implementation /
+# shaded libraries) are kept up-to-date and are not meant to be silenced
+# via .snyk. These ignore entries only target:
+#   - compileOnly / test dependencies that are provided by the Minecraft
+#     server or build tooling and cannot be upgraded from this project;
+#   - transitive dependencies pulled in by those APIs.
+#
+# If a vulnerability is ever exploitable through a dependency that the
+# plugin actually ships and controls, it will be addressed by upgrading
+# that dependency rather than by extending .snyk ignores.
+
 ignore:
   # ----------------------------------------------------------------
   # commons-lang 2.6 (from Paper API 1.16.5 - compileOnly)
@@ -19,6 +37,10 @@ ignore:
         reason: 'Guava 21.0 is only pulled via Paper API / BungeeCord chat as compileOnly; plugin does not shade or ship Guava.'
 
   'SNYK-JAVA-COMGOOGLEGUAVA-32236':
+    - '*':
+        reason: 'Guava 21.0 is only pulled via Paper API / BungeeCord chat as compileOnly; plugin does not shade or ship Guava.'
+
+  'SNYK-JAVA-COMGOOGLEGUAVA-20825054':
     - '*':
         reason: 'Guava 21.0 is only pulled via Paper API / BungeeCord chat as compileOnly; plugin does not shade or ship Guava.'
 
