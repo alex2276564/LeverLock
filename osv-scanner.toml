@@ -25,6 +25,10 @@ reason = "Guava 21.0 from Paper API (compileOnly, not in final JAR)"
 id = "GHSA-mvr2-9pj6-7w5j"
 reason = "Guava 21.0 from Paper API (compileOnly, not in final JAR)"
 
+[[IgnoredVulns]]
+id = "GHSA-xxph-c9ww-hj94"
+reason = "Guava 21.0 from Paper API (compileOnly, not in final JAR)"
+
 # ----------------------------------------------------------------
 # commons-lang 2.6 (from Paper API - compileOnly)
 # ----------------------------------------------------------------

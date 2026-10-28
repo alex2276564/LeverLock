@@ -86,6 +86,36 @@ ignore:
         reason: 'Gson 2.8.0 is only pulled via Paper API as compileOnly; plugin does not ship or use this Gson copy to deserialize untrusted data.'
 
   # ----------------------------------------------------------------
+  # ASM 9.0 (from Paper API - compileOnly)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-ORGOW2ASM-21715439':
+    - '*':
+        reason: 'ASM 9.0 is only pulled via Paper API as compileOnly; plugin does not shade or ship ASM.'
+
+  'SNYK-JAVA-ORGOW2ASM-21715442':
+    - '*':
+        reason: 'ASM 9.0 is only pulled via Paper API as compileOnly; plugin does not shade or ship ASM.'
+
+  'SNYK-JAVA-ORGOW2ASM-21715445':
+    - '*':
+        reason: 'ASM 9.0 is only pulled via Paper API as compileOnly; plugin does not shade or ship ASM.'
+
+  'SNYK-JAVA-ORGOW2ASM-21715448':
+    - '*':
+        reason: 'ASM 9.0 is only pulled via Paper API as compileOnly; plugin does not shade or ship ASM.'
+
+  'SNYK-JAVA-ORGOW2ASM-21715452':
+    - '*':
+        reason: 'ASM 9.0 is only pulled via Paper API as compileOnly; plugin does not shade or ship ASM.'
+
+  # ----------------------------------------------------------------
+  # Objenesis 3.3 (test-only dependency)
+  # ----------------------------------------------------------------
+  'SNYK-JAVA-ORGOBJENESIS-21755439':
+    - '*':
+        reason: 'Objenesis 3.3 is only pulled in as a test-time dependency (e.g. via Mockito); not present in the final plugin JAR on production servers.'
+
+  # ----------------------------------------------------------------
   # SnakeYAML 1.27 (Paper) + 1.33 (Okaeri, shaded)
   # ----------------------------------------------------------------
   'SNYK-JAVA-ORGYAML-3152153':
