@@ -46,7 +46,7 @@ jobs:
   # ================================================================
   build:
     name: 🏗️ Build plugin
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     outputs:
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.22.1
+        uses: step-security/harden-runner@v2.22.3
         with:
           egress-policy: audit
 
@@ -74,7 +74,7 @@ jobs:
           distribution: ${{ env.JAVA_DIST }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6.4.0
+        uses: gradle/actions/setup-gradle@v6.4.1
 
       - name: Check Gradle version matches input
         env:
@@ -160,7 +160,7 @@ jobs:
   release:
     name: 🚀 GitHub Release
     needs: [ build, provenance ]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
 
     permissions:
@@ -168,7 +168,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.22.1
+        uses: step-security/harden-runner@v2.22.3
         with:
           egress-policy: audit
 
